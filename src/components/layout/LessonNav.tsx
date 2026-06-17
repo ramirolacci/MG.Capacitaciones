@@ -1,6 +1,7 @@
 import { useCourse } from '../../context/CourseContext'
 import { COURSE_DATA, getNextLesson, getPrevLesson } from '../../data/course'
 import { GlobalProgressBar } from '../course/LessonRenderer'
+import { getAssetUrl } from '../../utils/assets'
 
 interface LessonNavProps {
   currentModuleId: string
@@ -96,7 +97,7 @@ export function TopBar({ currentModuleId, currentLessonId, onMenuToggle }: TopBa
 
       {/* Mi Gusto logo */}
       <img
-        src="/Logo Mi Gusto 2025.png"
+        src={getAssetUrl('/Logo Mi Gusto 2025.png')}
         alt="Mi Gusto Logo"
         className="h-8 w-auto object-contain flex-shrink-0"
       />
