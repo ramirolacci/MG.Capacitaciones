@@ -49,6 +49,17 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const navigate = usePageNavigate()
   const { progress, isLessonCompleted, goToLesson } = useCourse()
 
+  /** Detects likely gender from a Spanish name heuristic:
+   *  first name ending in 'a' → woman, otherwise → man */
+  const getGenderIcon = (fullName: string | null | undefined): string => {
+    if (!fullName) return '👤'
+    const firstName = fullName.trim().split(/\s+/)[0].toLowerCase()
+    // Common exceptions: masculine names ending in 'a'
+    const masculineExceptions = ['luca', 'matia', 'elija', 'josua', 'ezra', 'ilia']
+    if (masculineExceptions.includes(firstName)) return '👨🏻'
+    return firstName.endsWith('a') ? '👩🏻' : '👨🏻'
+  }
+
   const flat = getFlatLessons()
   const requiredLessons = flat.filter(l => l.id !== 'evaluacion-test' && l.id !== 'cierre-equipo')
   const completedRequired = requiredLessons.filter(l => isLessonCompleted(l.id)).length
@@ -62,20 +73,26 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const content = (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="px-5 py-5 border-b border-surface-border flex items-center justify-between gap-2">
-        <div className="min-w-0">
-          <p className="text-xs text-text-muted uppercase tracking-wider font-medium">Mi Gusto</p>
+      <div className="px-5 py-4 border-b border-surface-border flex items-center justify-between gap-2">
+        <div className="min-w-0 flex-1">
+          <p className="text-xs text-text-muted uppercase tracking-wider font-medium flex items-center gap-1 truncate">
+            <span>{getGenderIcon(progress.userName)}</span>
+            <span className="truncate">{progress.userName || 'Colaborador'}</span>
+          </p>
           <h2 className="text-sm font-bold text-text-primary mt-0.5 truncate">BPM · Capacitación</h2>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
-          {/* Botón de Evaluación */}
+          {/* Botón Inicio (antes "Volver al Portal") */}
           <button
-            onClick={handleGoToEvaluation}
-            title="Acceder a la evaluación"
-            className="text-xs font-bold px-2.5 py-1.5 rounded-lg bg-brand-600 hover:bg-brand-700 text-white shadow-glow border border-brand-500 transition-all duration-200 flex items-center gap-1"
+            onClick={() => {
+              navigate('/')
+              onClose?.()
+            }}
+            title="Volver al inicio"
+            className="btn-primary flex items-center gap-1.5 text-xs py-1.5 px-3 rounded-lg shadow-glow"
           >
-            <span>📝</span>
-            <span>Evaluar</span>
+            <span>🏠</span>
+            <span>Inicio</span>
           </button>
 
           {onClose && (
@@ -130,19 +147,17 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         })}
       </nav>
 
-      {/* Footer */}
-      <div className="px-5 py-3 border-t border-surface-border flex flex-col gap-2">
+      <div className="px-5 py-3 border-t border-surface-border flex flex-col items-center gap-2">
+        {/* Botón Evaluar (antes en el header) */}
         <button
-          onClick={() => {
-            navigate('/')
-            onClose?.()
-          }}
-          className="text-xs font-semibold text-brand-400 hover:text-brand-300 bg-brand-500/10 hover:bg-brand-500/15 border border-brand-500/20 py-2 rounded-lg transition-colors w-full flex items-center justify-center gap-1.5"
+          onClick={handleGoToEvaluation}
+          title="Acceder a la evaluación"
+          className="btn-primary flex items-center gap-1.5 text-xs py-2 px-4 rounded-lg shadow-glow"
         >
-          <span>⬅️</span>
-          <span>Volver al Portal</span>
+          <span>📝</span>
+          <span>Evaluar</span>
         </button>
-        <p className="text-[10px] text-text-muted text-center font-medium">Desarrollado por el Departamento de sistemas de Mi Gusto 🥟</p>
+        <p className="text-[10px] text-text-muted text-center font-medium mt-1">Desarrollado por el Departamento de sistemas de Mi Gusto 🥟</p>
       </div>
     </div>
   )

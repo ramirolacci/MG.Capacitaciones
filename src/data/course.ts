@@ -62,7 +62,7 @@ export const COURSE_DATA: Course = {
       number: 1,
       title: 'El Personal',
       description: 'La primera barrera de defensa contra la contaminación.',
-      icon: '👷',
+      icon: '👷🏻',
       color: 'blue-500',
       colorHex: '#3b82f6',
       lessons: [
@@ -85,7 +85,7 @@ export const COURSE_DATA: Course = {
             title: 'El Personal es la Primera Barrera de Defensa',
             description: 'Un manipulador puede contaminar un alimento con:',
             items: [
-              { text: 'Cabellos', icon: '💇' },
+              { text: 'Cabellos', icon: '💇🏻' },
               { text: 'Microorganismos', icon: '🦠' },
               { text: 'Objetos personales', icon: '💍' },
               { text: 'Malas prácticas', icon: '❌' },
@@ -529,7 +529,7 @@ export const COURSE_DATA: Course = {
             highlight: 'Cada tarea que realizás, por pequeña que sea, impacta en la seguridad del alimento.',
             highlightVariant: 'success',
             items: [
-              { text: 'El personal', icon: '👷' },
+              { text: 'El personal', icon: '👷🏻' },
               { text: 'Producción', icon: '🏭' },
               { text: 'Calidad', icon: '✅' },
               { text: 'Logística', icon: '🚛' },
