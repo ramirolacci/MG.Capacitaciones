@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
+import gsap from 'gsap'
 import { useCourse } from '../../context/CourseContext'
 import { useGSAPEntrance } from '../../hooks/useGSAPEntrance'
 import { getFlatLessons, COURSE_DATA } from '../../data/course'
@@ -187,10 +188,41 @@ export function EvaluationSlide() {
   const completedRequired = requiredLessons.filter(l => isLessonCompleted(l.id)).length
   const isUnlocked = completedRequired === requiredLessons.length
 
+  const stateRef = useRef<HTMLDivElement>(null)
+  const questionRef = useRef<HTMLDivElement>(null)
+
   const [quizState, setQuizState] = useState<'intro' | 'quiz' | 'results'>('intro')
   const [currentIdx, setCurrentIdx] = useState(0)
   const [answers, setAnswers] = useState<Record<number, number>>({})
   const [showReview, setShowReview] = useState(false)
+
+  /** Animate current panel out, swap state, animate new panel in */
+  const transitionTo = useCallback(
+    (nextState: 'intro' | 'quiz' | 'results', after?: () => void) => {
+      const el = stateRef.current
+      if (!el) {
+        setQuizState(nextState)
+        after?.()
+        return
+      }
+      gsap.to(el, {
+        opacity: 0,
+        y: -16,
+        duration: 0.22,
+        ease: 'power2.in',
+        onComplete: () => {
+          setQuizState(nextState)
+          after?.()
+          gsap.fromTo(
+            el,
+            { opacity: 0, y: 20 },
+            { opacity: 1, y: 0, duration: 0.32, ease: 'power2.out' }
+          )
+        },
+      })
+    },
+    []
+  )
 
   // Calificación
   const correctCount = QUESTIONS.filter((q, index) => answers[index] === q.correctAnswer).length
@@ -229,11 +261,12 @@ export function EvaluationSlide() {
   }, [quizState, passed, correctCount, markCurrentComplete, setEvaluationResult, alreadyFailed])
 
   const handleStart = () => {
-    setAnswers({})
-    setCurrentIdx(0)
-    setQuizState('quiz')
-    setIsEvaluationActive(true)
-    setShowReview(false)
+    transitionTo('quiz', () => {
+      setAnswers({})
+      setCurrentIdx(0)
+      setIsEvaluationActive(true)
+      setShowReview(false)
+    })
   }
 
   const handleSelectOption = (optionIdx: number) => {
@@ -243,31 +276,54 @@ export function EvaluationSlide() {
     }))
   }
 
+  /** Slide the question body out/in when navigating between questions */
+  const animateQuestion = useCallback((newIdx: number) => {
+    const el = questionRef.current
+    if (!el) { setCurrentIdx(newIdx); return }
+    const direction = newIdx > currentIdx ? 1 : -1
+    gsap.to(el, {
+      opacity: 0,
+      x: direction * -24,
+      duration: 0.18,
+      ease: 'power2.in',
+      onComplete: () => {
+        setCurrentIdx(newIdx)
+        gsap.fromTo(
+          el,
+          { opacity: 0, x: direction * 24 },
+          { opacity: 1, x: 0, duration: 0.22, ease: 'power2.out' }
+        )
+      },
+    })
+  }, [currentIdx])
+
   const handlePrevQuestion = () => {
-    if (currentIdx > 0) {
-      setCurrentIdx(currentIdx - 1)
-    }
+    if (currentIdx > 0) animateQuestion(currentIdx - 1)
   }
 
   const handleNextQuestion = () => {
     if (currentIdx < QUESTIONS.length - 1) {
-      setCurrentIdx(currentIdx + 1)
+      animateQuestion(currentIdx + 1)
     } else {
-      setQuizState('results')
-      setIsEvaluationActive(false)
+      transitionTo('results', () => {
+        setIsEvaluationActive(false)
+      })
     }
   }
 
   const handleRetry = () => {
-    setAnswers({})
-    setCurrentIdx(0)
-    setQuizState('quiz')
-    setIsEvaluationActive(true)
-    setShowReview(false)
+    transitionTo('quiz', () => {
+      setAnswers({})
+      setCurrentIdx(0)
+      setIsEvaluationActive(true)
+      setShowReview(false)
+    })
   }
 
   return (
     <div ref={containerRef} className="w-full max-w-3xl mx-auto flex flex-col gap-6">
+      {/* Animated state panel wrapper */}
+      <div ref={stateRef}>
       {/* PANTALLA INICIAL (INTRO) */}
       {quizState === 'intro' && (
         <div className="card flex flex-col gap-6 text-center items-center py-10">
@@ -366,7 +422,7 @@ export function EvaluationSlide() {
           </div>
 
           {/* Pregunta */}
-          <div className="flex flex-col gap-4">
+          <div ref={questionRef} className="flex flex-col gap-4">
             <h3 className="text-fluid-xl font-bold text-text-primary leading-snug">
               {QUESTIONS[currentIdx].question}
             </h3>
@@ -527,6 +583,7 @@ export function EvaluationSlide() {
           )}
         </div>
       )}
+      </div>{/* /stateRef */}
     </div>
   )
 }
