@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { useCourse } from '../context/CourseContext'
+import { usePageNavigate } from '../hooks/usePageNavigate'
 
 interface ParticipantRecord {
   userName: string
@@ -13,7 +13,7 @@ interface ParticipantRecord {
 }
 
 export function AdminPanel() {
-  const navigate = useNavigate()
+  const navigate = usePageNavigate()
   const { resetUserEvaluation } = useCourse()
   const [participants, setParticipants] = useState<ParticipantRecord[]>([])
   const [searchQuery, setSearchQuery] = useState('')

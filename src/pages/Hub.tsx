@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
 import gsap from 'gsap'
 import { useCourse } from '../context/CourseContext'
+import { usePageNavigate } from '../hooks/usePageNavigate'
 
 interface TrainingModule {
   id: string
@@ -64,12 +64,14 @@ const MODULES: TrainingModule[] = [
 ]
 
 export function Hub() {
-  const navigate = useNavigate()
+  const navigate = usePageNavigate()
   const { progress, setUserName, logout } = useCourse()
   const [showModal, setShowModal] = useState(false)
   const [inputName, setInputName] = useState('')
   const [errorMsg, setErrorMsg] = useState('')
   const containerRef = useRef<HTMLDivElement>(null)
+  const modalOverlayRef = useRef<HTMLDivElement>(null)
+  const modalCardRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (!containerRef.current) return
@@ -81,6 +83,37 @@ export function Hub() {
     }, containerRef)
     return () => ctx.revert()
   }, [])
+
+  // Animate modal IN when showModal becomes true
+  useEffect(() => {
+    if (!showModal || !modalOverlayRef.current || !modalCardRef.current) return
+    gsap.fromTo(
+      modalOverlayRef.current,
+      { opacity: 0 },
+      { opacity: 1, duration: 0.25, ease: 'power2.out' }
+    )
+    gsap.fromTo(
+      modalCardRef.current,
+      { opacity: 0, scale: 0.92, y: 12 },
+      { opacity: 1, scale: 1, y: 0, duration: 0.3, ease: 'back.out(1.4)' }
+    )
+  }, [showModal])
+
+  const handleCloseModal = () => {
+    if (!modalOverlayRef.current || !modalCardRef.current) {
+      setShowModal(false)
+      setErrorMsg('')
+      return
+    }
+    const tl = gsap.timeline({
+      onComplete: () => {
+        setShowModal(false)
+        setErrorMsg('')
+      },
+    })
+    tl.to(modalCardRef.current, { opacity: 0, scale: 0.94, y: 8, duration: 0.2, ease: 'power2.in' })
+      .to(modalOverlayRef.current, { opacity: 0, duration: 0.15, ease: 'power1.in' }, '-=0.05')
+  }
 
   const handleModuleClick = (mod: TrainingModule) => {
     if (!mod.active) return
@@ -228,14 +261,17 @@ export function Hub() {
 
       {/* Name Input Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-surface-card border border-surface-border rounded-2xl w-full max-w-md p-6 shadow-glow relative animate-scale-up">
+        <div
+          ref={modalOverlayRef}
+          className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
+        >
+          <div
+            ref={modalCardRef}
+            className="bg-surface-card border border-surface-border rounded-2xl w-full max-w-md p-6 shadow-glow relative"
+          >
             <button
-              onClick={() => {
-                setShowModal(false)
-                setErrorMsg('')
-              }}
-              className="absolute top-4 right-4 text-text-muted hover:text-white"
+              onClick={handleCloseModal}
+              className="absolute top-4 right-4 text-text-muted hover:text-white transition-colors"
             >
               ✕
             </button>
@@ -263,12 +299,14 @@ export function Hub() {
                   <p className="text-red-400 text-xs mt-2 font-medium">⚠️ {errorMsg}</p>
                 )}
               </div>
-              <button
-                type="submit"
-                className="btn-primary w-full py-3.5 text-sm font-bold mt-2 shadow-glow flex items-center justify-center gap-2"
-              >
-                Comenzar Capacitación 🚀
-              </button>
+              <div className="flex justify-center mt-2">
+                <button
+                  type="submit"
+                  className="btn-primary px-8 py-3.5 text-sm font-bold shadow-glow flex items-center gap-2"
+                >
+                  Comenzar Capacitación 🚀
+                </button>
+              </div>
             </form>
           </div>
         </div>

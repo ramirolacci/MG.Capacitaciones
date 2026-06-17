@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom'
+import { usePageNavigate } from '../../hooks/usePageNavigate'
 import { useCourse } from '../../context/CourseContext'
 import { COURSE_DATA, getFlatLessons } from '../../data/course'
 import type { Lesson, Module } from '../../data/types'
@@ -46,7 +46,7 @@ function LessonItem({
 }
 
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
-  const navigate = useNavigate()
+  const navigate = usePageNavigate()
   const { progress, isLessonCompleted, goToLesson } = useCourse()
 
   const flat = getFlatLessons()

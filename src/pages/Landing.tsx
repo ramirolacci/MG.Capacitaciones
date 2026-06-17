@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import gsap from 'gsap'
+import { usePageNavigate } from '../hooks/usePageNavigate'
 import { COURSE_DATA } from '../data/course'
 import { useCourse } from '../context/CourseContext'
 
@@ -20,15 +21,16 @@ const MODULE_TEXT: Record<string, string> = {
 }
 
 export function Landing() {
-  const navigate = useNavigate()
+  const navigate = usePageNavigate()  // for user-triggered navigation (with animation)
+  const guardNavigate = useNavigate()  // for automatic guard redirect (no animation needed)
   const { progress } = useCourse()
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (!progress.userName) {
-      navigate('/', { replace: true })
+      guardNavigate('/', { replace: true })
     }
-  }, [progress.userName, navigate])
+  }, [progress.userName, guardNavigate])
 
   useEffect(() => {
     if (!ref.current) return

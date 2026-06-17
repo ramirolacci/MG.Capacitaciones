@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { usePageNavigate } from '../hooks/usePageNavigate'
 import gsap from 'gsap'
 import { useCourse } from '../context/CourseContext'
 import { COURSE_DATA } from '../data/course'
@@ -12,7 +13,8 @@ export function Course() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const contentRef = useRef<HTMLDivElement>(null)
   const prevKey = useRef('')
-  const navigate = useNavigate()
+  const navigate = usePageNavigate()   // user-triggered nav
+  const guardNavigate = useNavigate()   // guard redirect
 
   // Resolve current module and lesson
   const module = COURSE_DATA.modules.find(m => m.id === progress.currentModuleId)
@@ -20,8 +22,8 @@ export function Course() {
 
   // If no valid state found, redirect to landing
   useEffect(() => {
-    if (!module || !lesson) navigate('/')
-  }, [module, lesson, navigate])
+    if (!module || !lesson) guardNavigate('/')
+  }, [module, lesson, guardNavigate])
 
   // Slide transition animation when lesson changes
   const lessonKey = `${progress.currentModuleId}-${progress.currentLessonId}`
