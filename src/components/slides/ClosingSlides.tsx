@@ -62,10 +62,9 @@ export function ClosingSlide({ content, onRestart }: ClosingSlideProps) {
 
   return (
     <div ref={ref} className="flex flex-col items-center justify-center text-center gap-8 py-8 w-full">
-      <div className="cl-star text-7xl">🏆</div>
-
-      <div className="flex flex-col gap-3">
-        <div className="cl-text opacity-0 flex flex-col items-center gap-2 mb-2">
+      <div className="flex flex-row items-center justify-center gap-6 lg:flex-col lg:gap-8">
+        <div className="cl-star text-7xl flex-shrink-0">🏆</div>
+        <div className="cl-text opacity-0 flex flex-col items-center gap-2 lg:mb-2">
           <img
             src={getAssetUrl('/Logo Mi Gusto 2025.png')}
             alt="Mi Gusto Logo"
@@ -75,6 +74,9 @@ export function ClosingSlide({ content, onRestart }: ClosingSlideProps) {
             BPM
           </p>
         </div>
+      </div>
+
+      <div className="flex flex-col gap-3">
         <h2 className="cl-text opacity-0 text-fluid-4xl font-extrabold text-text-primary">
           {content.title}
         </h2>

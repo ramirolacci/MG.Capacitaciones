@@ -47,6 +47,7 @@ export const COURSE_DATA: Course = {
             imageSuggested: 'Producto terminado + consumidor satisfecho',
             imageAlt: 'Consumidor satisfecho con producto Mi Gusto',
             image: '/diapositivas/queSonLasBPM.png',
+            mobileStackedImageGrid: true,
             items: [
               { text: 'Alimentos seguros', icon: '✅' },
               { text: 'Menos reclamos', icon: '📉' },
@@ -86,6 +87,7 @@ export const COURSE_DATA: Course = {
           content: {
             title: 'El Personal es la Primera Barrera de Defensa',
             description: 'Un manipulador puede contaminar un alimento con:',
+            mobileItemsGrid: true,
             items: [
               { text: 'Cabellos', icon: '💇🏻' },
               { text: 'Microorganismos', icon: '🦠' },
@@ -140,6 +142,7 @@ export const COURSE_DATA: Course = {
             imageAlt: 'Personal con uniforme completo',
             image: '/diapositivas/Uniforme.png',
             imageFit: 'contain',
+            mobileStackedImageGrid: true,
             items: [
               { text: 'Limpio', icon: '✨' },
               { text: 'Completo', icon: '✅' },
@@ -238,6 +241,7 @@ export const COURSE_DATA: Course = {
             imageSuggested: 'Ejemplo correcto e incorrecto de paredes',
             imageAlt: 'Estado de paredes y techos',
             image: '/diapositivas/paredesYtechos.png',
+            mobileItemsGrid: true,
             compareColumns: [
               {
                 label: 'Incorrecto ❌',
@@ -362,6 +366,7 @@ export const COURSE_DATA: Course = {
             imageSuggested: 'Depósito ordenado y correctamente organizado',
             imageAlt: 'Depósito ordenado de materias primas',
             image: '/diapositivas/almacenamiento.png',
+            mobileStackedImageGrid: true,
             items: [
               { text: 'Materias primas', icon: '📦' },
               { text: 'Material de empaque', icon: '📫' },
@@ -459,6 +464,7 @@ export const COURSE_DATA: Course = {
             title: 'Registros',
             quote: 'Si no está registrado, no puede demostrarse.',
             description: 'Completar siempre:',
+            mobileItemsGrid: true,
             items: [
               { text: 'Planillas de control', icon: '📋' },
               { text: 'Registros de limpieza y desinfección', icon: '🧹' },
@@ -491,6 +497,7 @@ export const COURSE_DATA: Course = {
             imageAlt: 'Equipo Mi Gusto trabajando junto',
             highlight: 'Cada tarea que realizás, por pequeña que sea, impacta en la seguridad del alimento.',
             highlightVariant: 'success',
+            mobileItemsGrid: true,
             items: [
               { text: 'El personal', icon: '👷🏻' },
               { text: 'Producción', icon: '🏭' },

@@ -56,6 +56,8 @@ export interface LessonContent {
   highlightVariant?: 'warning' | 'danger' | 'info' | 'success'
   badge?: string              // Texto de badge (ej: "CAA")
   tagline?: string            // Tagline pequeño debajo del título
+  mobileItemsGrid?: boolean         // Mobile: ítems con íconos en grilla 2×2
+  mobileStackedImageGrid?: boolean  // Mobile: texto → imagen → ítems en grilla 2×2
 }
 
 /** Una lección dentro de un módulo */

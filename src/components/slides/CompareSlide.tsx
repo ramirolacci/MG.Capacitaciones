@@ -8,6 +8,7 @@ interface CompareSlideProps { content: LessonContent }
 export function CompareSlide({ content }: CompareSlideProps) {
   const ref = useGSAPEntrance({ y: 24, duration: 0.6 })
   const hasColumns = !!(content.compareColumns && content.compareColumns.length > 0)
+  const mobileGrid = content.mobileItemsGrid
 
   return (
     <div ref={ref} className="flex flex-col gap-6 w-full opacity-0">
@@ -30,24 +31,41 @@ export function CompareSlide({ content }: CompareSlideProps) {
       )}
 
       {hasColumns && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div
+          className={
+            mobileGrid
+              ? 'grid grid-cols-2 gap-3 sm:gap-4'
+              : 'grid grid-cols-1 sm:grid-cols-2 gap-4'
+          }
+        >
           {content.compareColumns!.map((col, i) => {
             const isCorrect = col.variant === 'correct'
             return (
               <div
                 key={i}
-                className={`rounded-2xl border-2 p-5 flex flex-col gap-3 ${
+                className={`rounded-2xl border-2 flex flex-col gap-3 ${
+                  mobileGrid ? 'p-3 sm:p-5' : 'p-5'
+                } ${
                   isCorrect
                     ? 'bg-brand-600/10 border-brand-600/50'
                     : 'bg-red-500/10 border-red-500/50'
                 }`}
               >
-                <h3 className={`font-bold text-fluid-lg ${isCorrect ? 'text-brand-400' : 'text-red-400'}`}>
+                <h3
+                  className={`font-bold ${
+                    mobileGrid ? 'text-sm sm:text-fluid-lg' : 'text-fluid-lg'
+                  } ${isCorrect ? 'text-brand-400' : 'text-red-400'}`}
+                >
                   {col.label}
                 </h3>
                 <ul className="flex flex-col gap-2">
                   {col.items.map((item, j) => (
-                    <li key={j} className="flex items-start gap-3 text-fluid-base text-text-secondary">
+                    <li
+                      key={j}
+                      className={`flex items-start gap-2 text-text-secondary ${
+                        mobileGrid ? 'text-xs sm:gap-3 sm:text-fluid-base' : 'gap-3 text-fluid-base'
+                      }`}
+                    >
                       <span className="mt-0.5 flex-shrink-0">{isCorrect ? '✅' : '❌'}</span>
                       <span>{item}</span>
                     </li>

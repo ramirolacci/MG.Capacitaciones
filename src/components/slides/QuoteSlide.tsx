@@ -8,6 +8,7 @@ interface QuoteSlideProps { content: LessonContent }
 export function QuoteSlide({ content }: QuoteSlideProps) {
   const quoteRef = useRef<HTMLDivElement>(null)
   const listRef = useGSAPStaggerList<HTMLUListElement>('li', { delay: 0.6 })
+  const mobileGrid = content.mobileItemsGrid
 
   useEffect(() => {
     if (!quoteRef.current) return
@@ -48,12 +49,22 @@ export function QuoteSlide({ content }: QuoteSlideProps) {
 
       {/* Items */}
       {content.items && (
-        <ul ref={listRef} className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <ul
+          ref={listRef}
+          className={
+            mobileGrid
+              ? 'grid grid-cols-2 gap-3 lg:grid-cols-2'
+              : 'grid grid-cols-1 sm:grid-cols-2 gap-3'
+          }
+        >
           {content.items.map((item, i) => (
             <li
               key={i}
-              className="flex items-center gap-4 bg-surface-card border border-surface-border
-                         rounded-xl px-5 py-4 opacity-0"
+              className={`bg-surface-card border border-surface-border rounded-xl opacity-0 ${
+                mobileGrid
+                  ? 'flex flex-col items-center justify-center gap-2 px-3 py-4 text-center lg:flex-row lg:items-center lg:gap-4 lg:px-5 lg:py-4 lg:text-left'
+                  : 'flex items-center gap-4 px-5 py-4'
+              }`}
             >
               {item.icon && <span className="text-2xl" aria-hidden="true">{item.icon}</span>}
               <span className="text-fluid-base text-text-primary font-medium">{item.text}</span>

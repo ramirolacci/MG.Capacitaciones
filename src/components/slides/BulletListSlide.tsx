@@ -38,10 +38,41 @@ export function BulletListSlide({ content }: BulletListSlideProps) {
     )
   }
 
+  const stackedMobile = content.mobileStackedImageGrid
+  const mobileGrid = content.mobileItemsGrid || stackedMobile
+  const hasImage = !!(content.imageSuggested || content.image)
+
+  const imageBlock = hasImage ? (
+    <div
+      className={`flex-shrink-0 w-full max-w-xl ${
+        stackedMobile
+          ? 'order-2 lg:order-none lg:w-[45%] xl:w-[50%]'
+          : 'lg:w-[45%] xl:w-[50%]'
+      }`}
+    >
+      <ImagePlaceholder
+        alt={content.imageAlt ?? content.title}
+        suggested={content.imageSuggested}
+        image={content.image}
+        aspectRatio="square"
+        objectFit={content.imageFit ?? 'cover'}
+      />
+    </div>
+  ) : null
+
   return (
     <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 w-full">
-      <div className="flex-1 flex flex-col gap-5">
-        <div ref={headerRef} className="flex flex-col gap-3 opacity-0">
+      <div
+        className={
+          stackedMobile
+            ? 'contents lg:flex lg:flex-1 lg:flex-col lg:gap-5'
+            : 'flex-1 flex flex-col gap-5'
+        }
+      >
+        <div
+          ref={headerRef}
+          className={`flex flex-col gap-3 opacity-0 ${stackedMobile ? 'order-1' : ''}`}
+        >
           {content.badge && <BadgePill label={content.badge} />}
           <h2 className="lesson-title">{content.title}</h2>
           {content.description && (
@@ -49,15 +80,31 @@ export function BulletListSlide({ content }: BulletListSlideProps) {
           )}
         </div>
 
-        <ul ref={listRef} className="flex flex-col gap-3 mt-2">
-          {content.items.map((item, i) => (
+        <ul
+          ref={listRef}
+          className={
+            mobileGrid
+              ? 'order-3 grid grid-cols-2 gap-3 mt-2 lg:order-none lg:flex lg:flex-col lg:gap-3'
+              : 'flex flex-col gap-3 mt-2'
+          }
+        >
+          {(content.items ?? []).map((item, i) => (
             <li
               key={i}
-              className="flex items-center gap-4 bg-surface-card border border-surface-border
-                         rounded-xl px-5 py-4 opacity-0 hover:border-brand-600/50 transition-colors duration-200"
+              className={`flex bg-surface-card border border-surface-border rounded-xl opacity-0
+                         hover:border-brand-600/50 transition-colors duration-200 ${
+                           mobileGrid
+                             ? 'flex-col items-center justify-center gap-2 px-3 py-4 text-center lg:flex-row lg:items-center lg:gap-4 lg:px-5 lg:py-4 lg:text-left'
+                             : 'items-center gap-4 px-5 py-4'
+                         }`}
             >
               {item.icon && (
-                <span className="text-2xl flex-shrink-0 w-8 text-center" aria-hidden="true">
+                <span
+                  className={`text-2xl flex-shrink-0 text-center ${
+                    mobileGrid ? 'w-auto' : 'w-8'
+                  }`}
+                  aria-hidden="true"
+                >
                   {item.icon}
                 </span>
               )}
@@ -66,20 +113,12 @@ export function BulletListSlide({ content }: BulletListSlideProps) {
           ))}
         </ul>
 
-        <HighlightBlock content={content} />
+        <div className={stackedMobile ? 'order-4 lg:order-none' : undefined}>
+          <HighlightBlock content={content} />
+        </div>
       </div>
 
-      {(content.imageSuggested || content.image) && (
-        <div className="flex-shrink-0 w-full lg:w-[45%] xl:w-[50%] max-w-xl">
-          <ImagePlaceholder
-            alt={content.imageAlt ?? content.title}
-            suggested={content.imageSuggested}
-            image={content.image}
-            aspectRatio="square"
-            objectFit={content.imageFit ?? "cover"}
-          />
-        </div>
-      )}
+      {imageBlock}
     </div>
   )
 }
