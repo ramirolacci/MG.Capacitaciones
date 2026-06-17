@@ -111,7 +111,7 @@ Cada lección utiliza tipos de slide especializados — hero, listas, comparativ
 
 <br />
 
-**Desarrollado por el Departamento de Sistemas de Mi Gusto** 🍕
+**Desarrollado por el Departamento de Sistemas de Mi Gusto** 🥟
 
 *Capacitación obligatoria · Inocuidad alimentaria · Calidad*
 
