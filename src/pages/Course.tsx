@@ -66,7 +66,7 @@ export function Course() {
           ref={contentRef}
           className="flex-1 overflow-y-auto px-4 py-6 md:px-8 md:py-10 lg:px-12"
         >
-          <div className="max-w-4xl mx-auto">
+          <div className="max-w-6xl mx-auto">
             <LessonRenderer lesson={lesson} module={module} />
           </div>
         </div>

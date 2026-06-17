@@ -7,6 +7,7 @@ interface CompareSlideProps { content: LessonContent }
 
 export function CompareSlide({ content }: CompareSlideProps) {
   const ref = useGSAPEntrance({ y: 24, duration: 0.6 })
+  const hasColumns = !!(content.compareColumns && content.compareColumns.length > 0)
 
   return (
     <div ref={ref} className="flex flex-col gap-6 w-full opacity-0">
@@ -17,18 +18,20 @@ export function CompareSlide({ content }: CompareSlideProps) {
         )}
       </div>
 
-      {content.imageSuggested && (
+      {(content.imageSuggested || content.image) && (
         <ImagePlaceholder
           alt={content.imageAlt ?? content.title}
           suggested={content.imageSuggested}
+          image={content.image}
           aspectRatio="wide"
-          className="max-h-48"
+          objectFit="contain"
+          className={hasColumns ? "max-h-96 md:max-h-[480px] lg:max-h-[550px]" : "max-h-[70vh] w-full"}
         />
       )}
 
-      {content.compareColumns && (
+      {hasColumns && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {content.compareColumns.map((col, i) => {
+          {content.compareColumns!.map((col, i) => {
             const isCorrect = col.variant === 'correct'
             return (
               <div

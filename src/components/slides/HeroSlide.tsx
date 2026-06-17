@@ -28,11 +28,13 @@ export function HeroSlide({ content }: HeroSlideProps) {
         )}
       </div>
       {/* Image side */}
-      <div className="flex-1 w-full max-w-lg">
+      <div className="flex-1 w-full max-w-2xl">
         <ImagePlaceholder
           alt={content.imageAlt ?? content.title}
           suggested={content.imageSuggested}
+          image={content.image}
           aspectRatio="video"
+          objectFit={content.imageFit ?? "cover"}
         />
       </div>
     </div>

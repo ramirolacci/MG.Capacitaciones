@@ -50,6 +50,8 @@ export interface LessonContent {
   quoteAuthor?: string
   imageAlt?: string
   imageSuggested?: string
+  image?: string              // Ruta de la imagen real en la carpeta public
+  imageFit?: 'cover' | 'contain' // Ajuste de la imagen
   highlight?: string          // Texto resaltado / alerta
   highlightVariant?: 'warning' | 'danger' | 'info' | 'success'
   badge?: string              // Texto de badge (ej: "CAA")

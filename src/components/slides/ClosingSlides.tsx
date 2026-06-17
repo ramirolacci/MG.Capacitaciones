@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import gsap from 'gsap'
 import type { LessonContent } from '../../data/types'
+import { getAssetUrl } from '../../utils/assets'
 
 interface CommitmentSlideProps { content: LessonContent }
 
@@ -66,7 +67,7 @@ export function ClosingSlide({ content, onRestart }: ClosingSlideProps) {
       <div className="flex flex-col gap-3">
         <div className="cl-text opacity-0 flex flex-col items-center gap-2 mb-2">
           <img
-            src="/Logo Mi Gusto 2025.png"
+            src={getAssetUrl('/Logo Mi Gusto 2025.png')}
             alt="Mi Gusto Logo"
             className="h-10 w-auto object-contain"
           />

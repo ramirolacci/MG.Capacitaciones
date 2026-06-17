@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import gsap from 'gsap'
 import { useCourse } from '../context/CourseContext'
 import { usePageNavigate } from '../hooks/usePageNavigate'
+import { getAssetUrl } from '../utils/assets'
 
 interface TrainingModule {
   id: string
@@ -172,21 +173,27 @@ export function Hub() {
 
   return (
     <div ref={containerRef} className="min-h-dvh bg-gradient-dark flex flex-col justify-between text-text-primary px-4 py-8 md:px-8">
-      {/* Top action bar */}
       <header className="w-full max-w-6xl mx-auto flex justify-between items-center mb-10">
         <div className="flex items-center gap-3">
           <img
-            src="/Logo Mi Gusto 2025.png"
+            src={getAssetUrl('/Logo Mi Gusto 2025.png')}
             alt="Mi Gusto Logo"
             className="h-10 w-auto object-contain hub-logo opacity-0"
           />
         </div>
-        <button
-          onClick={() => navigate('/admin')}
-          className="text-xs text-text-muted hover:text-brand-400 bg-surface-card hover:bg-surface-elevated border border-surface-border px-3.5 py-2 rounded-lg transition-all"
-        >
-          🔑 Panel de Supervisor
-        </button>
+        {progress.userName ? (
+          <div className="flex items-center gap-3 bg-brand-600/10 border border-brand-600/20 px-3.5 py-2 rounded-lg">
+            <span className="text-xs font-bold text-brand-300">👤 {progress.userName}</span>
+            <button
+              onClick={logout}
+              className="text-[10px] uppercase font-black text-red-400 hover:text-red-300 transition-colors border-l border-brand-600/20 pl-3"
+            >
+              Salir
+            </button>
+          </div>
+        ) : (
+          <div />
+        )}
       </header>
 
       {/* Main Content */}
@@ -203,32 +210,7 @@ export function Hub() {
           </p>
         </div>
 
-        {/* Active Session Info */}
-        {progress.userName && (
-          <div className="w-full max-w-3xl mb-6 bg-brand-600/10 border border-brand-600/30 rounded-xl px-5 py-3 flex flex-col sm:flex-row justify-between items-center gap-3">
-            <div className="flex items-center gap-3 text-left">
-              <span className="text-xl">🧑🏻</span>
-              <div>
-                <p className="text-xs text-brand-300 font-semibold uppercase tracking-wider">Sesión Activa</p>
-                <h4 className="text-sm font-bold text-white">{progress.userName}</h4>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => navigate('/calidad')}
-                className="text-xs font-bold text-white bg-brand-600 hover:bg-brand-500 px-4 py-2 rounded-lg transition-colors"
-              >
-                Continuar
-              </button>
-              <button
-                onClick={logout}
-                className="text-xs text-red-300 hover:bg-red-500/15 border border-red-500/30 px-3 py-2 rounded-lg transition-colors"
-              >
-                Salir
-              </button>
-            </div>
-          </div>
-        )}
+
 
         {/* 2x3 Button Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-5xl">

@@ -1,21 +1,50 @@
-/** Placeholder visual para imágenes sugeridas */
+import { useState } from 'react'
+import { getAssetUrl } from '../../utils/assets'
+
 interface ImagePlaceholderProps {
   alt: string
   suggested?: string
+  image?: string
   className?: string
   aspectRatio?: 'video' | 'square' | 'wide'
+  objectFit?: 'cover' | 'contain'
 }
 
 export function ImagePlaceholder({
   alt,
   suggested,
+  image,
   className = '',
   aspectRatio = 'video',
+  objectFit = 'cover',
 }: ImagePlaceholderProps) {
+  const [hasError, setHasError] = useState(false)
+
   const ratioClass =
     aspectRatio === 'square' ? 'aspect-square'
     : aspectRatio === 'wide' ? 'aspect-[21/9]'
     : 'aspect-video'
+
+  if (image && !hasError) {
+    const isContain = objectFit === 'contain'
+    const containerRatioClass = isContain ? 'h-auto w-fit max-w-full mx-auto' : `w-full ${ratioClass}`
+    return (
+      <div
+        className={`${containerRatioClass} rounded-xl overflow-hidden border border-surface-border bg-surface-elevated flex items-center justify-center relative ${className}`}
+      >
+        <img
+          src={getAssetUrl(image)}
+          alt={alt}
+          className={
+            isContain
+              ? 'max-w-full h-auto max-h-[inherit] object-contain select-none pointer-events-none'
+              : 'w-full h-full object-cover select-none pointer-events-none'
+          }
+          onError={() => setHasError(true)}
+        />
+      </div>
+    )
+  }
 
   return (
     <div

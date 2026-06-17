@@ -32,6 +32,7 @@ export const COURSE_DATA: Course = {
             description: 'Garantizar la elaboración de alimentos seguros para el consumidor mediante el control del personal, las instalaciones y las operaciones.',
             imageSuggested: 'Foto general de la planta Mi Gusto',
             imageAlt: 'Planta de producción Mi Gusto',
+            image: '/diapositivas/BuenasPracticasManufactura.png',
             tagline: 'Mi Gusto · Capacitación obligatoria',
           },
         },
@@ -45,6 +46,7 @@ export const COURSE_DATA: Course = {
             badge: 'CAA',
             imageSuggested: 'Producto terminado + consumidor satisfecho',
             imageAlt: 'Consumidor satisfecho con producto Mi Gusto',
+            image: '/diapositivas/queSonLasBPM.png',
             items: [
               { text: 'Alimentos seguros', icon: '✅' },
               { text: 'Menos reclamos', icon: '📉' },
@@ -122,20 +124,9 @@ export const COURSE_DATA: Course = {
             description: 'Pueden caer al producto y generar contaminación física.',
             imageSuggested: 'Foto comparativa Correcto vs Incorrecto',
             imageAlt: 'Comparación de uso de accesorios',
+            image: '/diapositivas/prohibidosEnPlanta.png',
             highlight: 'Riesgo: Contaminación física del producto.',
             highlightVariant: 'danger',
-            compareColumns: [
-              {
-                label: 'No permitido ❌',
-                variant: 'incorrect',
-                items: ['Anillos', 'Aros colgantes', 'Pulseras', 'Relojes', 'Piercings expuestos'],
-              },
-              {
-                label: 'Correcto ✅',
-                variant: 'correct',
-                items: ['Sin accesorios', 'Uniforme limpio', 'Cofia colocada', 'Barbijo puesto'],
-              },
-            ],
           },
         },
         {
@@ -147,6 +138,8 @@ export const COURSE_DATA: Course = {
             description: 'El uniforme debe mantenerse en condiciones óptimas en todo momento.',
             imageSuggested: 'Personal de Mi Gusto correctamente uniformado',
             imageAlt: 'Personal con uniforme completo',
+            image: '/diapositivas/Uniforme.png',
+            imageFit: 'contain',
             items: [
               { text: 'Limpio', icon: '✨' },
               { text: 'Completo', icon: '✅' },
@@ -163,18 +156,7 @@ export const COURSE_DATA: Course = {
             title: 'Uso Correcto de Cofia y Barbijo',
             imageSuggested: 'Ejemplo correcto e incorrecto de cofia y barbijo',
             imageAlt: 'Uso correcto e incorrecto de EPP facial',
-            compareColumns: [
-              {
-                label: 'Incorrecto ❌',
-                variant: 'incorrect',
-                items: ['Cabello expuesto fuera de la cofia', 'Barbijo bajo la nariz', 'Barbijo solo en la boca'],
-              },
-              {
-                label: 'Correcto ✅',
-                variant: 'correct',
-                items: ['Cofia cubre totalmente el cabello', 'Barbijo cubre nariz y boca', 'Ajuste firme y seguro'],
-              },
-            ],
+            image: '/diapositivas/UsoCorrectoBarbijo.png',
           },
         },
         {
@@ -244,12 +226,7 @@ export const COURSE_DATA: Course = {
             title: 'Pisos',
             imageSuggested: 'Piso sanitario de la planta',
             imageAlt: 'Piso lavable antideslizante de la planta',
-            items: [
-              { text: 'Lavables', icon: '✅' },
-              { text: 'Resistentes', icon: '✅' },
-              { text: 'Antideslizantes', icon: '✅' },
-              { text: 'Sin roturas ni grietas', icon: '✅' },
-            ],
+            image: '/diapositivas/pisos.png',
           },
         },
         {
@@ -260,6 +237,7 @@ export const COURSE_DATA: Course = {
             title: 'Paredes y Techos',
             imageSuggested: 'Ejemplo correcto e incorrecto de paredes',
             imageAlt: 'Estado de paredes y techos',
+            image: '/diapositivas/paredesYtechos.png',
             compareColumns: [
               {
                 label: 'Incorrecto ❌',
@@ -383,6 +361,7 @@ export const COURSE_DATA: Course = {
             description: 'Separar correctamente para evitar contaminación cruzada.',
             imageSuggested: 'Depósito ordenado y correctamente organizado',
             imageAlt: 'Depósito ordenado de materias primas',
+            image: '/diapositivas/almacenamiento.png',
             items: [
               { text: 'Materias primas', icon: '📦' },
               { text: 'Material de empaque', icon: '📫' },
