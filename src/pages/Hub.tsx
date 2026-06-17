@@ -223,7 +223,7 @@ export function Hub() {
 
       {/* Footer */}
       <footer className="w-full text-center mt-12 py-4 border-t border-surface-border/30 max-w-6xl mx-auto">
-        <p className="text-xs text-text-muted">© Mi Gusto · 2026</p>
+        <p className="text-xs text-text-muted">Desarrollado por el Departamento de sistemas de Mi Gusto 🥟</p>
       </footer>
 
       {/* Name Input Modal */}
@@ -239,7 +239,7 @@ export function Hub() {
             >
               ✕
             </button>
-            <h3 className="text-fluid-xl font-bold text-white mb-2">Registro de Trabajador</h3>
+            <h3 className="text-fluid-xl font-bold text-white mb-2">Registro del colaborador</h3>
             <p className="text-xs text-text-secondary mb-5 leading-relaxed">
               Ingresá tu nombre y apellido completo para registrar tu participación. El supervisor monitoreará los resultados en el panel administrativo.
             </p>
@@ -255,7 +255,7 @@ export function Hub() {
                     setInputName(e.target.value)
                     setErrorMsg('')
                   }}
-                  placeholder="ej: Juan Pérez"
+                  placeholder="Ingresar nombre y apellido"
                   autoFocus
                   className="w-full bg-surface border border-surface-border focus:border-brand-500 rounded-xl px-4 py-3 text-sm text-white focus:outline-none transition-colors"
                 />

@@ -142,7 +142,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
           <span>⬅️</span>
           <span>Volver al Portal</span>
         </button>
-        <p className="text-[10px] text-text-muted text-center font-medium">© Mi Gusto · 2026</p>
+        <p className="text-[10px] text-text-muted text-center font-medium">Desarrollado por el Departamento de sistemas de Mi Gusto 🥟</p>
       </div>
     </div>
   )

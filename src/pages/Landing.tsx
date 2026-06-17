@@ -127,7 +127,7 @@ export function Landing() {
 
       {/* Footer */}
       <footer className="border-t border-surface-border py-5 text-center">
-        <p className="text-xs text-text-muted">© 2026 Mi Gusto · Todos los derechos reservados</p>
+        <p className="text-xs text-text-muted">Desarrollado por el Departamento de sistemas de Mi Gusto 🥟</p>
       </footer>
     </div>
   )
