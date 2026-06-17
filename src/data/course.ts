@@ -476,7 +476,7 @@ export const COURSE_DATA: Course = {
       number: 4,
       title: 'Compromiso',
       description: 'Todos somos responsables de la inocuidad alimentaria.',
-      icon: '🤝',
+      icon: '🤝🏻',
       color: 'brand-600',
       colorHex: '#2d6a4f',
       lessons: [

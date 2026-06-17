@@ -75,6 +75,15 @@ export function Hub() {
   const modalOverlayRef = useRef<HTMLDivElement>(null)
   const modalCardRef = useRef<HTMLDivElement>(null)
 
+  const getGenderIcon = (fullName: string | null | undefined): string => {
+    if (!fullName) return '🧑🏻'
+    const firstName = fullName.trim().split(/\s+/)[0].toLowerCase()
+    // Common exceptions: masculine names ending in 'a'
+    const masculineExceptions = ['luca', 'matia', 'elija', 'josua', 'ezra', 'ilia']
+    if (masculineExceptions.includes(firstName)) return '👨🏻'
+    return firstName.endsWith('a') ? '👩🏻' : '👨🏻'
+  }
+
   useEffect(() => {
     if (progress.userName) {
       setAnimatedPercent(0)
@@ -183,7 +192,7 @@ export function Hub() {
         </div>
         {progress.userName ? (
           <div className="flex items-center gap-3 bg-brand-600/10 border border-brand-600/20 px-3.5 py-2 rounded-lg">
-            <span className="text-xs font-bold text-brand-300">👤 {progress.userName}</span>
+            <span className="text-xs font-bold text-brand-300">{getGenderIcon(progress.userName)} {progress.userName}</span>
             <button
               onClick={logout}
               className="text-[10px] uppercase font-black text-red-400 hover:text-red-300 transition-colors border-l border-brand-600/20 pl-3"

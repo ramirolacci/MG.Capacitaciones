@@ -21,7 +21,7 @@ export function CommitmentSlide({ content }: CommitmentSlideProps) {
   return (
     <div ref={ref} className="flex flex-col items-center justify-center text-center gap-8 py-6 w-full">
       <div className="cm-bg opacity-0 w-20 h-20 rounded-full bg-gradient-brand flex items-center justify-center shadow-glow text-4xl">
-        🤝
+        🤝🏻
       </div>
       <div className="flex flex-col gap-4">
         <h2 className="cm-content opacity-0 text-fluid-4xl font-extrabold text-text-primary">
