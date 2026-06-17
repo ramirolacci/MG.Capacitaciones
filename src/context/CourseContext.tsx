@@ -21,6 +21,12 @@ interface CourseContextValue {
   markCurrentComplete: () => void
   goToLesson: (moduleId: string, lessonId: string) => void
   resetProgress: () => void
+  isEvaluationActive: boolean
+  setIsEvaluationActive: (active: boolean) => void
+  setUserName: (name: string) => void
+  setEvaluationResult: (score: number, failed: boolean) => void
+  resetUserEvaluation: (userName: string) => void
+  logout: () => void
 }
 
 const CourseContext = createContext<CourseContextValue | null>(null)
@@ -34,14 +40,43 @@ export function CourseProvider({ children }: { children: ReactNode }) {
       return { ...defaultProgress, startedAt: new Date().toISOString() }
     }
   })
+  const [isEvaluationActive, setIsEvaluationActive] = useState(false)
 
   const totalLessons = getTotalLessons()
   const completedCount = progress.completedLessons.length
   const percentComplete = Math.round((completedCount / totalLessons) * 100)
 
+  // Synchronize current progress state to the global participants list
+  const saveParticipantToGlobalList = useCallback((state: ProgressState) => {
+    if (!state.userName) return
+    try {
+      const saved = localStorage.getItem('bpm-capacitaciones-all-participants')
+      const list = saved ? JSON.parse(saved) : []
+      const index = list.findIndex((p: any) => p.userName === state.userName)
+      const data = {
+        userName: state.userName,
+        startedAt: state.startedAt,
+        completedAt: state.completedAt,
+        evaluationScore: state.evaluationScore,
+        evaluationFailed: state.evaluationFailed,
+        completedLessonsCount: state.completedLessons.length,
+        lastUpdated: new Date().toISOString()
+      }
+      if (index >= 0) {
+        list[index] = data
+      } else {
+        list.push(data)
+      }
+      localStorage.setItem('bpm-capacitaciones-all-participants', JSON.stringify(list))
+    } catch (e) {
+      console.error(e)
+    }
+  }, [])
+
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(progress))
-  }, [progress])
+    saveParticipantToGlobalList(progress)
+  }, [progress, saveParticipantToGlobalList])
 
   const isLessonCompleted = useCallback(
     (lessonId: string) => progress.completedLessons.includes(lessonId),
@@ -71,8 +106,60 @@ export function CourseProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const resetProgress = useCallback(() => {
-    const fresh = { ...defaultProgress, startedAt: new Date().toISOString() }
-    setProgress(fresh)
+    setProgress(prev => ({
+      ...defaultProgress,
+      userName: prev.userName, // Keep name registered!
+      startedAt: new Date().toISOString(),
+    }))
+  }, [])
+
+  const setUserName = useCallback((name: string) => {
+    setProgress(prev => ({
+      ...prev,
+      userName: name,
+      startedAt: prev.startedAt || new Date().toISOString(),
+    }))
+  }, [])
+
+  const setEvaluationResult = useCallback((score: number, failed: boolean) => {
+    setProgress(prev => ({
+      ...prev,
+      evaluationScore: score,
+      evaluationFailed: failed,
+      completedAt: !failed ? new Date().toISOString() : prev.completedAt,
+    }))
+  }, [])
+
+  const resetUserEvaluation = useCallback((targetName: string) => {
+    try {
+      const saved = localStorage.getItem('bpm-capacitaciones-all-participants')
+      if (saved) {
+        const list = JSON.parse(saved)
+        const index = list.findIndex((p: any) => p.userName === targetName)
+        if (index >= 0) {
+          list[index].evaluationFailed = undefined
+          list[index].evaluationScore = undefined
+          localStorage.setItem('bpm-capacitaciones-all-participants', JSON.stringify(list))
+        }
+      }
+    } catch (e) {
+      console.error(e)
+    }
+
+    setProgress(prev => {
+      if (prev.userName === targetName) {
+        return {
+          ...prev,
+          evaluationFailed: undefined,
+          evaluationScore: undefined,
+        }
+      }
+      return prev
+    })
+  }, [])
+
+  const logout = useCallback(() => {
+    setProgress({ ...defaultProgress })
   }, [])
 
   return (
@@ -86,6 +173,12 @@ export function CourseProvider({ children }: { children: ReactNode }) {
         markCurrentComplete,
         goToLesson,
         resetProgress,
+        isEvaluationActive,
+        setIsEvaluationActive,
+        setUserName,
+        setEvaluationResult,
+        resetUserEvaluation,
+        logout,
       }}
     >
       {children}

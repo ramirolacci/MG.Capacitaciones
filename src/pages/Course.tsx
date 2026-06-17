@@ -8,7 +8,7 @@ import { Sidebar } from '../components/layout/Sidebar'
 import { LessonNav, TopBar } from '../components/layout/LessonNav'
 
 export function Course() {
-  const { progress } = useCourse()
+  const { progress, isEvaluationActive } = useCourse()
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const contentRef = useRef<HTMLDivElement>(null)
   const prevKey = useRef('')
@@ -41,19 +41,23 @@ export function Course() {
   return (
     <div className="flex h-dvh overflow-hidden bg-surface">
       {/* Sidebar */}
-      <Sidebar
-        isOpen={isSidebarOpen}
-        onClose={() => setIsSidebarOpen(false)}
-      />
+      {!isEvaluationActive && (
+        <Sidebar
+          isOpen={isSidebarOpen}
+          onClose={() => setIsSidebarOpen(false)}
+        />
+      )}
 
       {/* Main content area */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Top bar */}
-        <TopBar
-          currentModuleId={progress.currentModuleId}
-          currentLessonId={progress.currentLessonId}
-          onMenuToggle={() => setIsSidebarOpen(prev => !prev)}
-        />
+        {!isEvaluationActive && (
+          <TopBar
+            currentModuleId={progress.currentModuleId}
+            currentLessonId={progress.currentLessonId}
+            onMenuToggle={() => setIsSidebarOpen(prev => !prev)}
+          />
+        )}
 
         {/* Lesson content — scrollable */}
         <div
@@ -66,10 +70,12 @@ export function Course() {
         </div>
 
         {/* Nav bar */}
-        <LessonNav
-          currentModuleId={progress.currentModuleId}
-          currentLessonId={progress.currentLessonId}
-        />
+        {!isEvaluationActive && (
+          <LessonNav
+            currentModuleId={progress.currentModuleId}
+            currentLessonId={progress.currentLessonId}
+          />
+        )}
       </div>
     </div>
   )

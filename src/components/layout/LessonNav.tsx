@@ -8,9 +8,14 @@ interface LessonNavProps {
 }
 
 export function LessonNav({ currentModuleId, currentLessonId }: LessonNavProps) {
-  const { goToLesson, markCurrentComplete } = useCourse()
+  const { goToLesson, markCurrentComplete, isLessonCompleted } = useCourse()
   const prev = getPrevLesson(currentModuleId, currentLessonId)
   const next = getNextLesson(currentModuleId, currentLessonId)
+
+  const module = COURSE_DATA.modules.find(m => m.id === currentModuleId)
+  const lesson = module?.lessons.find(l => l.id === currentLessonId)
+  const isEvaluation = lesson?.type === 'evaluation'
+  const isCompleted = lesson ? isLessonCompleted(lesson.id) : false
 
   const handleNext = () => {
     markCurrentComplete()
@@ -39,11 +44,13 @@ export function LessonNav({ currentModuleId, currentLessonId }: LessonNavProps) 
 
       <button
         onClick={handleNext}
-        disabled={!next}
+        disabled={!next || (isEvaluation && !isCompleted)}
         className="btn-primary flex items-center gap-2 text-sm"
         aria-label={next ? 'Siguiente lección' : 'Fin del curso'}
       >
-        <span className="hidden sm:inline">{next ? 'Siguiente' : '¡Finalizar!'}</span>
+        <span className="hidden sm:inline">
+          {isEvaluation && !isCompleted ? 'Aprobar para continuar' : next ? 'Siguiente' : '¡Finalizar!'}
+        </span>
         <span aria-hidden="true">{next ? '→' : '🏆'}</span>
       </button>
     </div>
@@ -87,10 +94,12 @@ export function TopBar({ currentModuleId, currentLessonId, onMenuToggle }: TopBa
         </p>
       </div>
 
-      {/* Mi Gusto logo placeholder */}
-      <div className="flex-shrink-0 bg-brand-600/20 border border-brand-600/30 rounded-lg px-3 py-1.5">
-        <span className="text-brand-400 text-xs font-bold tracking-wide">Mi Gusto</span>
-      </div>
+      {/* Mi Gusto logo */}
+      <img
+        src="/Logo Mi Gusto 2025.png"
+        alt="Mi Gusto Logo"
+        className="h-8 w-auto object-contain flex-shrink-0"
+      />
     </header>
   )
 }

@@ -7,6 +7,7 @@ import { StepsSlide } from '../slides/StepsSlide'
 import { QuoteSlide } from '../slides/QuoteSlide'
 import { ModuleHero } from '../slides/ModuleHero'
 import { CommitmentSlide, ClosingSlide } from '../slides/ClosingSlides'
+import { EvaluationSlide } from '../slides/EvaluationSlide'
 import { useCourse } from '../../context/CourseContext'
 import { COURSE_DATA } from '../../data/course'
 
@@ -37,6 +38,8 @@ export function LessonRenderer({ lesson, module }: LessonRendererProps) {
       return <CommitmentSlide content={lesson.content} />
     case 'closing':
       return <ClosingSlide content={lesson.content} onRestart={resetProgress} />
+    case 'evaluation':
+      return <EvaluationSlide />
     default:
       return (
         <div className="flex flex-col gap-4 text-center py-12">

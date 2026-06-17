@@ -547,6 +547,15 @@ export const COURSE_DATA: Course = {
           },
         },
         {
+          id: 'evaluacion-test',
+          title: 'Evaluación de BPM',
+          type: 'evaluation',
+          content: {
+            title: 'Evaluación de BPM',
+            description: 'Completá la evaluación obligatoria de 15 preguntas de opción múltiple.',
+          },
+        },
+        {
           id: 'cierre-equipo',
           title: 'Trabajemos en Equipo',
           type: 'closing',

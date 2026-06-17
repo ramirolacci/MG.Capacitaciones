@@ -16,6 +16,7 @@ export type SlideType =
   | 'steps'            // Secuencia de pasos numerados
   | 'closing'          // Pantalla de cierre
   | 'commitment'       // Pantalla de compromiso final
+  | 'evaluation'       // Evaluación de opción múltiple (15 preguntas)
 
 /** Un ítem de lista simple */
 export interface BulletItem {
@@ -93,4 +94,7 @@ export interface ProgressState {
   currentLessonId: string
   startedAt: string | null
   completedAt: string | null
+  userName?: string
+  evaluationScore?: number
+  evaluationFailed?: boolean
 }

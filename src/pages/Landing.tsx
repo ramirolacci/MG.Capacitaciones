@@ -25,6 +25,12 @@ export function Landing() {
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
+    if (!progress.userName) {
+      navigate('/', { replace: true })
+    }
+  }, [progress.userName, navigate])
+
+  useEffect(() => {
     if (!ref.current) return
     const ctx = gsap.context(() => {
       gsap.timeline()
@@ -121,7 +127,7 @@ export function Landing() {
 
       {/* Footer */}
       <footer className="border-t border-surface-border py-5 text-center">
-        <p className="text-xs text-text-muted">© 2024 Mi Gusto · Todos los derechos reservados</p>
+        <p className="text-xs text-text-muted">© 2026 Mi Gusto · Todos los derechos reservados</p>
       </footer>
     </div>
   )

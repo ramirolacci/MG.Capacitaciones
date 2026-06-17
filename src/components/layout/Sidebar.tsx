@@ -1,5 +1,6 @@
+import { useNavigate } from 'react-router-dom'
 import { useCourse } from '../../context/CourseContext'
-import { COURSE_DATA } from '../../data/course'
+import { COURSE_DATA, getFlatLessons } from '../../data/course'
 import type { Lesson, Module } from '../../data/types'
 
 interface SidebarProps {
@@ -45,25 +46,48 @@ function LessonItem({
 }
 
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
+  const navigate = useNavigate()
   const { progress, isLessonCompleted, goToLesson } = useCourse()
+
+  const flat = getFlatLessons()
+  const requiredLessons = flat.filter(l => l.id !== 'evaluacion-test' && l.id !== 'cierre-equipo')
+  const completedRequired = requiredLessons.filter(l => isLessonCompleted(l.id)).length
+  const isUnlocked = completedRequired === requiredLessons.length
+
+  const handleGoToEvaluation = () => {
+    goToLesson('cierre', 'evaluacion-test')
+    onClose?.()
+  }
 
   const content = (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="px-5 py-5 border-b border-surface-border flex items-center justify-between">
-        <div>
+      <div className="px-5 py-5 border-b border-surface-border flex items-center justify-between gap-2">
+        <div className="min-w-0">
           <p className="text-xs text-text-muted uppercase tracking-wider font-medium">Mi Gusto</p>
-          <h2 className="text-sm font-bold text-text-primary mt-0.5">BPM · Capacitación</h2>
+          <h2 className="text-sm font-bold text-text-primary mt-0.5 truncate">BPM · Capacitación</h2>
         </div>
-        {onClose && (
+        <div className="flex items-center gap-2 flex-shrink-0">
+          {/* Botón de Evaluación */}
           <button
-            onClick={onClose}
-            className="lg:hidden w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface-elevated text-text-secondary"
-            aria-label="Cerrar menú"
+            onClick={handleGoToEvaluation}
+            title="Acceder a la evaluación"
+            className="text-xs font-bold px-2.5 py-1.5 rounded-lg bg-brand-600 hover:bg-brand-700 text-white shadow-glow border border-brand-500 transition-all duration-200 flex items-center gap-1"
           >
-            ✕
+            <span>📝</span>
+            <span>Evaluar</span>
           </button>
-        )}
+
+          {onClose && (
+            <button
+              onClick={onClose}
+              className="lg:hidden w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface-elevated text-text-secondary"
+              aria-label="Cerrar menú"
+            >
+              ✕
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Module tree */}
@@ -107,8 +131,18 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
       </nav>
 
       {/* Footer */}
-      <div className="px-5 py-4 border-t border-surface-border">
-        <p className="text-xs text-text-muted text-center">© Mi Gusto · 2024</p>
+      <div className="px-5 py-3 border-t border-surface-border flex flex-col gap-2">
+        <button
+          onClick={() => {
+            navigate('/')
+            onClose?.()
+          }}
+          className="text-xs font-semibold text-brand-400 hover:text-brand-300 bg-brand-500/10 hover:bg-brand-500/15 border border-brand-500/20 py-2 rounded-lg transition-colors w-full flex items-center justify-center gap-1.5"
+        >
+          <span>⬅️</span>
+          <span>Volver al Portal</span>
+        </button>
+        <p className="text-[10px] text-text-muted text-center font-medium">© Mi Gusto · 2026</p>
       </div>
     </div>
   )

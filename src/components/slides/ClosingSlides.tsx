@@ -64,9 +64,16 @@ export function ClosingSlide({ content, onRestart }: ClosingSlideProps) {
       <div className="cl-star text-7xl">🏆</div>
 
       <div className="flex flex-col gap-3">
-        <p className="cl-text opacity-0 text-brand-400 text-sm font-semibold tracking-widest uppercase">
-          {content.tagline}
-        </p>
+        <div className="cl-text opacity-0 flex flex-col items-center gap-2 mb-2">
+          <img
+            src="/Logo Mi Gusto 2025.png"
+            alt="Mi Gusto Logo"
+            className="h-10 w-auto object-contain"
+          />
+          <p className="text-brand-400 text-xs font-semibold tracking-widest uppercase mt-1">
+            BPM
+          </p>
+        </div>
         <h2 className="cl-text opacity-0 text-fluid-4xl font-extrabold text-text-primary">
           {content.title}
         </h2>
