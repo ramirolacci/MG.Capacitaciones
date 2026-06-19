@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
+import { createPortal } from 'react-dom'
 import { useCourse } from '../context/CourseContext'
 import { usePageNavigate } from '../hooks/usePageNavigate'
 import { supabase } from '../utils/supabase'
@@ -45,6 +46,13 @@ export function AdminPanel() {
   const [sortBy, setSortBy] = useState<'name' | 'score' | 'date'>('date')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
   const [activeTab, setActiveTab] = useState<string>('calidad')
+  const [isExportPreviewOpen, setIsExportPreviewOpen] = useState(false)
+  const [visibleColumns, setVisibleColumns] = useState({
+    trabajador: true,
+    estado: true,
+    nota: true,
+    tiempo: true
+  })
 
   // Auth States
   const [session, setSession] = useState<any>(null)
@@ -286,20 +294,50 @@ export function AdminPanel() {
     const currentTraining = TRAININGS.find(t => t.id === activeTab)
     const trainingTitle = currentTraining ? currentTraining.title : activeTab
 
-    const headers = 'Trabajador,Capacitación,Fecha Inicio,Fecha Fin,Correctas (de 15),Estado,Ultima Actualizacion\n'
+    const headerParts: string[] = []
+    if (visibleColumns.trabajador) headerParts.push('Trabajador')
+    headerParts.push('Capacitación')
+    if (visibleColumns.estado) headerParts.push('Estado')
+    if (visibleColumns.nota) headerParts.push('Correctas (de 15)')
+    if (visibleColumns.tiempo) headerParts.push('Tiempo')
+    headerParts.push('Fecha Inicio', 'Fecha Fin', 'Ultima Actualizacion')
+
+    const headers = headerParts.join(';') + '\n'
+
     const rows = activeParticipants.map(p => {
-      const status = p.evaluationFailed === false
-        ? 'Aprobado'
-        : p.evaluationFailed === true
-        ? 'No Aprobado'
-        : 'En curso'
+      const rowParts: string[] = []
+      
+      if (visibleColumns.trabajador) rowParts.push(`"${p.userName}"`)
+      rowParts.push(`"${trainingTitle}"`)
+      
+      if (visibleColumns.estado) {
+        const status = p.evaluationFailed === false
+          ? 'Aprobado'
+          : p.evaluationFailed === true
+          ? 'No Aprobado'
+          : 'En curso'
+        rowParts.push(`"${status}"`)
+      }
+      
+      if (visibleColumns.nota) {
+        const score = p.evaluationScore !== undefined ? p.evaluationScore : '-'
+        rowParts.push(`"${score}"`)
+      }
+      
+      if (visibleColumns.tiempo) {
+        const time = formatDuration(p.startedAt, p.completedAt, p.lastUpdated)
+        rowParts.push(`"${time}"`)
+      }
+
       const start = p.startedAt ? new Date(p.startedAt).toLocaleString() : '-'
       const end = p.completedAt ? new Date(p.completedAt).toLocaleString() : '-'
-      const score = p.evaluationScore !== undefined ? p.evaluationScore : '-'
-      return `"${p.userName}","${trainingTitle}","${start}","${end}","${score}","${status}","${new Date(p.lastUpdated).toLocaleString()}"`
+      rowParts.push(`"${start}"`, `"${end}"`, `"${new Date(p.lastUpdated).toLocaleString()}"`)
+
+      return rowParts.join(';')
     }).join('\n')
 
-    const blob = new Blob([headers + rows], { type: 'text/csv;charset=utf-8;' })
+    const bom = '\uFEFF'
+    const blob = new Blob([bom + headers + rows], { type: 'text/csv;charset=utf-8;' })
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url
@@ -307,6 +345,71 @@ export function AdminPanel() {
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
+  }
+
+  // Print/PDF Handler
+  const handlePrint = () => {
+    if (activeParticipants.length === 0) return
+    
+    const style = document.createElement('style')
+    style.innerHTML = `
+      @media print {
+        #root {
+          display: none !important;
+        }
+        #print-area {
+          display: block !important;
+          position: absolute !important;
+          left: 0 !important;
+          top: 0 !important;
+          width: 100% !important;
+        }
+      }
+    `
+    document.head.appendChild(style)
+    window.print()
+    document.head.removeChild(style)
+  }
+
+  // PDF direct downloader
+  const handleDownloadPDF = () => {
+    if (activeParticipants.length === 0) return
+    
+    const runPdfGeneration = () => {
+      const element = document.getElementById('print-area')
+      if (!element) return
+
+      element.classList.remove('hidden')
+      
+      const currentTraining = TRAININGS.find(t => t.id === activeTab)
+      const trainingTitle = currentTraining ? currentTraining.title : activeTab
+      
+      const opt = {
+        margin:       0.5,
+        filename:     `reporte_capacitacion_${activeTab}_migusto.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true, logging: false },
+        jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+      }
+      
+      // @ts-ignore
+      html2pdf().set(opt).from(element).save().then(() => {
+        element.classList.add('hidden')
+      }).catch((err: any) => {
+        console.error(err)
+        element.classList.add('hidden')
+      })
+    }
+
+    // @ts-ignore
+    if (typeof html2pdf !== 'undefined') {
+      runPdfGeneration()
+    } else {
+      const script = document.createElement('script')
+      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js'
+      script.onload = runPdfGeneration
+      document.head.appendChild(script)
+    }
   }
 
   // Filtered and Sorted list
@@ -449,11 +552,11 @@ export function AdminPanel() {
 
           <div className="flex gap-2 w-full sm:w-auto justify-end">
             <button
-              onClick={handleExportCSV}
+              onClick={() => setIsExportPreviewOpen(true)}
               disabled={activeParticipants.length === 0}
               className="text-xs font-bold bg-brand-600/10 hover:bg-brand-600/20 text-brand-300 border border-brand-500/30 px-4 py-2.5 rounded-lg transition-colors flex items-center gap-1.5"
             >
-              📥 Exportar CSV
+              📥 Exportar
             </button>
             <button
               onClick={handleLogout}
@@ -741,8 +844,130 @@ export function AdminPanel() {
         </div>
       </div>
 
+      {/* Export Preview Modal */}
+      {isExportPreviewOpen && createPortal(
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-surface-card border border-surface-border rounded-2xl w-full max-w-2xl p-6 shadow-glow relative animate-scale-in flex flex-col max-h-[85vh]">
+            <h3 className="text-lg font-black text-white mb-2">Vista Previa del Reporte</h3>
+            <p className="text-xs text-text-muted mb-4">
+              Módulo seleccionado: <strong className="text-brand-400">{TRAININGS.find(t => t.id === activeTab)?.title || activeTab}</strong>
+            </p>
+
+            {/* Column Toggles */}
+            <div className="flex flex-wrap gap-4 items-center mb-4 bg-surface/50 p-3 rounded-xl border border-surface-border/50 text-xs">
+              <span className="text-text-muted font-bold">Columnas:</span>
+              <label className="flex items-center gap-1.5 cursor-pointer text-white">
+                <input
+                  type="checkbox"
+                  checked={visibleColumns.trabajador}
+                  onChange={(e) => setVisibleColumns(prev => ({ ...prev, trabajador: e.target.checked }))}
+                  className="rounded border-surface-border text-brand-500 focus:ring-0 focus:ring-offset-0 bg-surface"
+                />
+                Trabajador
+              </label>
+              <label className="flex items-center gap-1.5 cursor-pointer text-white">
+                <input
+                  type="checkbox"
+                  checked={visibleColumns.estado}
+                  onChange={(e) => setVisibleColumns(prev => ({ ...prev, estado: e.target.checked }))}
+                  className="rounded border-surface-border text-brand-500 focus:ring-0 focus:ring-offset-0 bg-surface"
+                />
+                Estado
+              </label>
+              <label className="flex items-center gap-1.5 cursor-pointer text-white">
+                <input
+                  type="checkbox"
+                  checked={visibleColumns.nota}
+                  onChange={(e) => setVisibleColumns(prev => ({ ...prev, nota: e.target.checked }))}
+                  className="rounded border-surface-border text-brand-500 focus:ring-0 focus:ring-offset-0 bg-surface"
+                />
+                Nota
+              </label>
+              <label className="flex items-center gap-1.5 cursor-pointer text-white">
+                <input
+                  type="checkbox"
+                  checked={visibleColumns.tiempo}
+                  onChange={(e) => setVisibleColumns(prev => ({ ...prev, tiempo: e.target.checked }))}
+                  className="rounded border-surface-border text-brand-500 focus:ring-0 focus:ring-offset-0 bg-surface"
+                />
+                Tiempo
+              </label>
+            </div>
+
+            {/* Table Preview */}
+            <div className="flex-1 overflow-y-auto border border-surface-border/50 rounded-xl bg-surface mb-6 scrollbar-thin">
+              <table className="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr className="bg-surface-elevated/40 border-b border-surface-border text-text-muted uppercase font-bold">
+                    {visibleColumns.trabajador && <th className="px-4 py-3">Trabajador</th>}
+                    {visibleColumns.estado && <th className="px-4 py-3 text-center">Estado</th>}
+                    {visibleColumns.nota && <th className="px-4 py-3 text-center">Nota</th>}
+                    {visibleColumns.tiempo && <th className="px-4 py-3 text-center">Tiempo</th>}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-surface-border/30 text-text-secondary">
+                  {activeParticipants.map((p) => {
+                    const isPassed = p.evaluationFailed === false
+                    const isFailed = p.evaluationFailed === true
+                    const status = isPassed ? 'Aprobado' : isFailed ? 'No Aprobado' : 'En curso'
+                    return (
+                      <tr key={p.userName}>
+                        {visibleColumns.trabajador && <td className="px-4 py-3 font-semibold text-white">{p.userName}</td>}
+                        {visibleColumns.estado && <td className="px-4 py-3 text-center">{status}</td>}
+                        {visibleColumns.nota && <td className="px-4 py-3 text-center">{p.evaluationScore !== undefined ? `${p.evaluationScore}/15` : '-'}</td>}
+                        {visibleColumns.tiempo && <td className="px-4 py-3 text-center">{formatDuration(p.startedAt, p.completedAt, p.lastUpdated)}</td>}
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Modal Actions */}
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button
+                onClick={() => setIsExportPreviewOpen(false)}
+                className="order-last sm:order-first flex-1 bg-surface border border-surface-border hover:bg-surface-elevated text-text-secondary hover:text-white py-3 rounded-xl text-xs font-bold transition-all"
+              >
+                Cerrar
+              </button>
+              <div className="flex-1 flex gap-2">
+                <button
+                  onClick={() => {
+                    handleExportCSV();
+                    setIsExportPreviewOpen(false);
+                  }}
+                  className="flex-1 bg-brand-600/20 hover:bg-brand-600/30 text-brand-300 border border-brand-500/30 py-3 rounded-xl text-xs font-bold transition-all"
+                >
+                  📄 CSV
+                </button>
+                <button
+                  onClick={() => {
+                    handleDownloadPDF();
+                    setIsExportPreviewOpen(false);
+                  }}
+                  className="flex-1 bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 border border-blue-500/30 py-3 rounded-xl text-xs font-bold transition-all"
+                >
+                  📕 PDF
+                </button>
+                <button
+                  onClick={() => {
+                    handlePrint();
+                    setIsExportPreviewOpen(false);
+                  }}
+                  className="flex-1 bg-amber-600/20 hover:bg-amber-600/30 text-amber-300 border border-amber-500/30 py-3 rounded-xl text-xs font-bold transition-all"
+                >
+                  🖨️ Imprimir
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
       {/* Reusable Custom Confirmation Modal */}
-      {confirmModal.isOpen && (
+      {confirmModal.isOpen && createPortal(
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-surface-card border border-surface-border rounded-2xl w-full max-w-md p-6 shadow-glow relative animate-scale-in">
             <div className="flex flex-col items-center text-center gap-4">
@@ -782,7 +1007,94 @@ export function AdminPanel() {
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
+      )}
+
+      {/* Hidden Print Area */}
+      {createPortal(
+        <div id="print-area" className="hidden">
+          <style dangerouslySetInnerHTML={{ __html: `
+            #print-area {
+              font-family: sans-serif !important;
+              padding: 40px !important;
+              color: #333 !important;
+              background-color: white !important;
+            }
+            #print-area h1 {
+              font-size: 24px !important;
+              font-weight: bold !important;
+              margin-bottom: 5px !important;
+              margin-top: 0 !important;
+              color: #111 !important;
+            }
+            #print-area .meta {
+              color: #666 !important;
+              margin-bottom: 20px !important;
+              font-size: 14px !important;
+              line-height: 1.5 !important;
+            }
+            #print-area table {
+              width: 100% !important;
+              border-collapse: collapse !important;
+              margin-top: 20px !important;
+            }
+            #print-area th {
+              background-color: #f5f5f5 !important;
+              padding: 12px 10px !important;
+              border-bottom: 2px solid #ddd !important;
+              font-weight: bold !important;
+              color: #333 !important;
+            }
+            #print-area th.align-left, #print-area td.align-left {
+              text-align: left !important;
+            }
+            #print-area th.align-center, #print-area td.align-center {
+              text-align: center !important;
+            }
+            #print-area td {
+              padding: 10px !important;
+              border-bottom: 1px solid #ddd !important;
+              color: #444 !important;
+            }
+          `}} />
+          <div>
+            <h1>Reporte de Capacitación</h1>
+            <div className="meta">
+              <strong>Módulo:</strong> {TRAININGS.find(t => t.id === activeTab)?.title || activeTab} <br/>
+              <strong>Fecha de Reporte:</strong> {new Date().toLocaleString()} <br/>
+              <strong>Total Registrados:</strong> {activeParticipants.length}
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  {visibleColumns.trabajador && <th className="align-left">Trabajador</th>}
+                  {visibleColumns.estado && <th className="align-center">Estado</th>}
+                  {visibleColumns.nota && <th className="align-center">Nota</th>}
+                  {visibleColumns.tiempo && <th className="align-center">Tiempo</th>}
+                </tr>
+              </thead>
+              <tbody>
+                {activeParticipants.map((p) => {
+                  const isPassed = p.evaluationFailed === false
+                  const isFailed = p.evaluationFailed === true
+                  const status = isPassed ? 'Aprobado' : isFailed ? 'No Aprobado' : 'En curso'
+                  const score = p.evaluationScore !== undefined ? `${p.evaluationScore} / 15` : '-'
+                  const time = formatDuration(p.startedAt, p.completedAt, p.lastUpdated)
+                  return (
+                    <tr key={p.userName}>
+                      {visibleColumns.trabajador && <td className="align-left">{p.userName}</td>}
+                      {visibleColumns.estado && <td className="align-center">{status}</td>}
+                      {visibleColumns.nota && <td className="align-center">{score}</td>}
+                      {visibleColumns.tiempo && <td className="align-center">{time}</td>}
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>,
+        document.body
       )}
     </div>
   )
