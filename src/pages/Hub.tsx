@@ -75,7 +75,7 @@ const LEGAJO_KEY = 'bpm-mi-gusto-legajo'
 
 export function Hub() {
   const navigate = usePageNavigate()
-  const { progress, setUserName, logout, updateUserName } = useCourse()
+  const { progress, setUserName, logout, updateUserName, trainings } = useCourse()
   const [showModal, setShowModal] = useState(false)
   const [inputName, setInputName] = useState('')
   const [errorMsg, setErrorMsg] = useState('')
@@ -308,7 +308,7 @@ export function Hub() {
 
         {/* 2x3 Button Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 w-full max-w-5xl">
-          {TRAININGS.map((mod) => {
+          {trainings.map((mod) => {
             const percent = getTrainingProgressPercent(mod.id)
             const { cardClass, glowClass, circleStroke, tagClass, titleHoverClass } = getColorClasses(mod.themeColor, mod.active)
             return (

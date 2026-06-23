@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom'
 import type { ProgressState, Course } from '../data/types'
 import { COURSES_DATA, getFlatLessons, getTotalLessons } from '../data/course'
 import { supabase } from '../utils/supabase'
-import { TRAININGS } from '../data/trainings'
+import { TRAININGS, type Training } from '../data/trainings'
 
 const GLOBAL_USERNAME_KEY = 'bpm-mi-gusto-global-username'
 const ACTIVE_TRAINING_KEY = 'bpm-mi-gusto-active-training-id'
@@ -40,6 +40,8 @@ interface CourseContextValue {
   logout: () => void
   syncProgressWithDatabase: () => Promise<void>
   updateUserName: (oldName: string, newName: string) => Promise<void>
+  trainings: Training[]
+  updateTrainingActiveStatus: (trainingId: string, active: boolean) => Promise<void>
 }
 
 const THEME_PALETTES = {
@@ -176,6 +178,54 @@ export function CourseProvider({ children }: { children: ReactNode }) {
   })
 
   const [isEvaluationActive, setIsEvaluationActive] = useState(false)
+  const [trainings, setTrainings] = useState<Training[]>(TRAININGS)
+
+  useEffect(() => {
+    const loadTrainingsConfig = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('participants')
+          .select('training_id, evaluation_failed')
+          .eq('user_name', '__config_active__')
+
+        if (data) {
+          setTrainings(prev => prev.map(t => {
+            const config = data.find(d => d.training_id === t.id)
+            if (config) {
+              return {
+                ...t,
+                active: !config.evaluation_failed
+              }
+            }
+            return t
+          }))
+        }
+      } catch (e) {
+        console.error('Error al cargar config de capacitaciones:', e)
+      }
+    }
+
+    loadTrainingsConfig()
+  }, [])
+
+  const updateTrainingActiveStatus = useCallback(async (trainingId: string, active: boolean) => {
+    setTrainings(prev => prev.map(t => t.id === trainingId ? { ...t, active } : t))
+    try {
+      const { error } = await supabase
+        .from('participants')
+        .upsert({
+          user_name: '__config_active__',
+          training_id: trainingId,
+          evaluation_failed: !active,
+          last_updated: new Date().toISOString()
+        })
+      if (error) {
+        console.error('Error al actualizar config de capacitaciones en Supabase:', error)
+      }
+    } catch (e) {
+      console.error(e)
+    }
+  }, [])
 
   // Set page-level CSS custom variables according to active sector/course theme
   useEffect(() => {
@@ -593,6 +643,8 @@ export function CourseProvider({ children }: { children: ReactNode }) {
         logout,
         syncProgressWithDatabase,
         updateUserName,
+        trainings,
+        updateTrainingActiveStatus,
       }}
     >
       {children}
