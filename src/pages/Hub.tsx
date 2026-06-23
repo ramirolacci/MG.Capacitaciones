@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import gsap from 'gsap'
 import { useCourse } from '../context/CourseContext'
@@ -71,9 +71,11 @@ const getColorClasses = (color: 'white' | 'red' | 'green' | 'yellow' | 'black' |
   }
 }
 
+const LEGAJO_KEY = 'bpm-mi-gusto-legajo'
+
 export function Hub() {
   const navigate = usePageNavigate()
-  const { progress, setUserName, logout } = useCourse()
+  const { progress, setUserName, logout, updateUserName } = useCourse()
   const [showModal, setShowModal] = useState(false)
   const [inputName, setInputName] = useState('')
   const [errorMsg, setErrorMsg] = useState('')
@@ -82,6 +84,15 @@ export function Hub() {
   const containerRef = useRef<HTMLDivElement>(null)
   const modalOverlayRef = useRef<HTMLDivElement>(null)
   const modalCardRef = useRef<HTMLDivElement>(null)
+
+  // Profile edit modal
+  const [showProfileModal, setShowProfileModal] = useState(false)
+  const [profileName, setProfileName] = useState('')
+  const [profileLegajo, setProfileLegajo] = useState('')
+  const [profileError, setProfileError] = useState('')
+  const [legajo, setLegajo] = useState<string>(() => localStorage.getItem(LEGAJO_KEY) || '')
+  const profileOverlayRef = useRef<HTMLDivElement>(null)
+  const profileCardRef = useRef<HTMLDivElement>(null)
 
   const getGenderIcon = (fullName: string | null | undefined): string => {
     if (!fullName) return '🧑🏻'
@@ -133,6 +144,66 @@ export function Hub() {
     })
     tl.to(modalCardRef.current, { opacity: 0, scale: 0.94, y: 8, duration: 0.2, ease: 'power2.in' })
       .to(modalOverlayRef.current, { opacity: 0, duration: 0.15, ease: 'power1.in' }, '-=0.05')
+  }
+
+  // Open profile modal and pre-fill fields
+  const handleOpenProfile = () => {
+    setProfileName(progress.userName || '')
+    setProfileLegajo(legajo)
+    setProfileError('')
+    setShowProfileModal(true)
+  }
+
+  // Animate profile modal in
+  useEffect(() => {
+    if (!showProfileModal || !profileOverlayRef.current || !profileCardRef.current) return
+    gsap.fromTo(profileOverlayRef.current, { opacity: 0 }, { opacity: 1, duration: 0.25, ease: 'power2.out' })
+    gsap.fromTo(profileCardRef.current, { opacity: 0, scale: 0.92, y: 12 }, { opacity: 1, scale: 1, y: 0, duration: 0.3, ease: 'back.out(1.4)' })
+  }, [showProfileModal])
+
+  const handleCloseProfile = () => {
+    if (!profileOverlayRef.current || !profileCardRef.current) {
+      setShowProfileModal(false)
+      return
+    }
+    gsap.timeline({ onComplete: () => setShowProfileModal(false) })
+      .to(profileCardRef.current, { opacity: 0, scale: 0.94, y: 8, duration: 0.2, ease: 'power2.in' })
+      .to(profileOverlayRef.current, { opacity: 0, duration: 0.15 }, '-=0.05')
+  }
+
+  const handleSaveProfile = async (e: React.FormEvent) => {
+    e.preventDefault()
+    const trimmedName = profileName.trim()
+    const trimmedLegajo = profileLegajo.trim()
+    if (!trimmedName || trimmedName.length < 4) {
+      setProfileError('Ingresá tu nombre completo (mínimo 4 caracteres).')
+      return
+    }
+    if (trimmedLegajo && !/^\d+$/.test(trimmedLegajo)) {
+      setProfileError('El número de legajo debe contener solo dígitos.')
+      return
+    }
+
+    try {
+      // If user changed their name, update it in context / database
+      if (progress.userName && trimmedName !== progress.userName) {
+        await updateUserName(progress.userName, trimmedName)
+      }
+    } catch (err: any) {
+      console.error(err)
+      setProfileError('Ocurrió un error al actualizar el nombre. Reintentá.')
+      return
+    }
+
+    // Save legajo to localStorage
+    if (trimmedLegajo) {
+      localStorage.setItem(LEGAJO_KEY, trimmedLegajo)
+    } else {
+      localStorage.removeItem(LEGAJO_KEY)
+    }
+    setLegajo(trimmedLegajo)
+    setProfileError('')
+    handleCloseProfile()
   }
 
   const handleModuleClick = (mod: Training) => {
@@ -202,8 +273,19 @@ export function Hub() {
           />
         </div>
         {progress.userName ? (
-          <div className="flex items-center gap-3 bg-white/5 border border-slate-500/20 px-3.5 py-2 rounded-lg">
-            <span className="text-xs font-bold text-brand-300">{getGenderIcon(progress.userName)} {progress.userName}</span>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2.5 bg-white/5 border border-slate-500/20 px-3.5 py-2 rounded-lg">
+              <span className="text-xs font-bold text-brand-300">{getGenderIcon(progress.userName)} {progress.userName}</span>
+            </div>
+            <button
+              onClick={handleOpenProfile}
+              title="Editar perfil"
+              className="p-2 bg-white/5 hover:bg-white/10 border border-slate-500/20 hover:border-slate-400/40 rounded-lg transition-all text-text-muted hover:text-white"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
+                <path fillRule="evenodd" d="M11.078 2.25c-.917 0-1.699.663-1.85 1.567L9.05 4.889c-.02.12-.115.26-.297.348a7.493 7.493 0 0 0-.986.57c-.166.115-.334.126-.45.083L6.3 5.508a1.875 1.875 0 0 0-2.282.819l-.922 1.597a1.875 1.875 0 0 0 .432 2.385l.84.692c.095.078.17.229.154.43a7.598 7.598 0 0 0 0 1.139c.015.2-.059.352-.153.43l-.841.692a1.875 1.875 0 0 0-.432 2.385l.922 1.597a1.875 1.875 0 0 0 2.282.818l1.019-.382c.115-.043.283-.031.45.082.312.214.641.405.985.57.182.088.277.228.297.35l.178 1.071c.151.904.933 1.567 1.85 1.567h1.844c.916 0 1.699-.663 1.85-1.567l.178-1.072c.02-.12.114-.26.297-.349.344-.165.673-.356.985-.57.167-.114.335-.125.45-.082l1.02.382a1.875 1.875 0 0 0 2.28-.819l.923-1.597a1.875 1.875 0 0 0-.432-2.385l-.84-.692c-.095-.078-.17-.229-.154-.43a7.614 7.614 0 0 0 0-1.139c-.016-.2.059-.352.153-.43l.84-.692c.708-.582.891-1.59.433-2.385l-.922-1.597a1.875 1.875 0 0 0-2.282-.818l-1.02.382c-.114.043-.282.031-.449-.083a7.49 7.49 0 0 0-.985-.57c-.183-.087-.277-.227-.297-.348l-.179-1.072a1.875 1.875 0 0 0-1.85-1.567h-1.843ZM12 15.75a3.75 3.75 0 1 0 0-7.5 3.75 3.75 0 0 0 0 7.5Z" clipRule="evenodd" />
+              </svg>
+            </button>
           </div>
         ) : (
           <div />
@@ -304,6 +386,90 @@ export function Hub() {
       <footer className="w-full text-center mt-12 py-4 border-t border-surface-border/30 max-w-6xl mx-auto">
         <p className="text-xs text-text-muted">Desarrollado por el Departamento de sistemas de Mi Gusto</p>
       </footer>
+
+      {/* Profile Edit Modal */}
+      {showProfileModal && createPortal(
+        <div
+          ref={profileOverlayRef}
+          className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={(e) => { if (e.target === e.currentTarget) handleCloseProfile() }}
+        >
+          <div
+            ref={profileCardRef}
+            className="bg-surface-card border border-surface-border rounded-2xl w-full max-w-md p-6 shadow-glow relative"
+          >
+            <button
+              onClick={handleCloseProfile}
+              className="absolute top-4 right-4 text-text-muted hover:text-white transition-colors text-lg leading-none"
+            >
+              ✕
+            </button>
+
+            <div className="flex items-center gap-3 mb-5">
+              <div className="w-10 h-10 rounded-xl bg-brand-500/10 border border-brand-500/20 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-brand-400" viewBox="0 0 24 24" fill="currentColor">
+                  <path fillRule="evenodd" d="M11.078 2.25c-.917 0-1.699.663-1.85 1.567L9.05 4.889c-.02.12-.115.26-.297.348a7.493 7.493 0 0 0-.986.57c-.166.115-.334.126-.45.083L6.3 5.508a1.875 1.875 0 0 0-2.282.819l-.922 1.597a1.875 1.875 0 0 0 .432 2.385l.84.692c.095.078.17.229.154.43a7.598 7.598 0 0 0 0 1.139c.015.2-.059.352-.153.43l-.841.692a1.875 1.875 0 0 0-.432 2.385l.922 1.597a1.875 1.875 0 0 0 2.282.818l1.019-.382c.115-.043.283-.031.45.082.312.214.641.405.985.57.182.088.277.228.297.35l.178 1.071c.151.904.933 1.567 1.85 1.567h1.844c.916 0 1.699-.663 1.85-1.567l.178-1.072c.02-.12.114-.26.297-.349.344-.165.673-.356.985-.57.167-.114.335-.125.45-.082l1.02.382a1.875 1.875 0 0 0 2.28-.819l.923-1.597a1.875 1.875 0 0 0-.432-2.385l-.84-.692c-.095-.078-.17-.229-.154-.43a7.614 7.614 0 0 0 0-1.139c-.016-.2.059-.352.153-.43l.84-.692c.708-.582.891-1.59.433-2.385l-.922-1.597a1.875 1.875 0 0 0-2.282-.818l-1.02.382c-.114.043-.282.031-.449-.083a7.49 7.49 0 0 0-.985-.57c-.183-.087-.277-.227-.297-.348l-.179-1.072a1.875 1.875 0 0 0-1.85-1.567h-1.843ZM12 15.75a3.75 3.75 0 1 0 0-7.5 3.75 3.75 0 0 0 0 7.5Z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-white">Editar Perfil</h3>
+                <p className="text-xs text-text-muted">Actualizá tus datos de identificación</p>
+              </div>
+            </div>
+
+            <form onSubmit={handleSaveProfile} className="flex flex-col gap-4">
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-2">
+                  Nombre y Apellido
+                </label>
+                <input
+                  type="text"
+                  value={profileName}
+                  onChange={(e) => { setProfileName(e.target.value); setProfileError('') }}
+                  placeholder="Ej: Juan García"
+                  className="w-full bg-surface border border-surface-border focus:border-brand-500 rounded-xl px-4 py-3 text-sm text-white focus:outline-none transition-colors"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-2">
+                  Número de Legajo
+                </label>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={profileLegajo}
+                  onChange={(e) => { setProfileLegajo(e.target.value); setProfileError('') }}
+                  placeholder="Ej: 00142"
+                  autoFocus
+                  className="w-full bg-surface border border-surface-border focus:border-brand-500 rounded-xl px-4 py-3 text-sm text-white focus:outline-none transition-colors"
+                />
+              </div>
+
+              {profileError && (
+                <p className="text-red-400 text-xs font-medium bg-red-500/10 border border-red-500/20 px-3 py-2.5 rounded-lg">⚠️ {profileError}</p>
+              )}
+
+              <div className="flex justify-end gap-3 mt-1">
+                <button
+                  type="submit"
+                  className="btn-primary py-3 px-6 text-xs font-bold shadow-glow w-auto"
+                >
+                  Guardar Cambios ✓
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCloseProfile}
+                  className="bg-surface border border-surface-border hover:bg-surface-elevated text-text-secondary hover:text-white py-3 px-6 rounded-xl text-xs font-bold transition-all w-auto"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>,
+        document.body
+      )}
 
       {/* Name Input Modal */}
       {showModal && createPortal(

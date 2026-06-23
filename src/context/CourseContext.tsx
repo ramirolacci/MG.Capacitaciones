@@ -39,6 +39,7 @@ interface CourseContextValue {
   selectTraining: (trainingId: string) => void
   logout: () => void
   syncProgressWithDatabase: () => Promise<void>
+  updateUserName: (oldName: string, newName: string) => Promise<void>
 }
 
 const THEME_PALETTES = {
@@ -503,6 +504,65 @@ export function CourseProvider({ children }: { children: ReactNode }) {
     }
   }, [progress.userName, progress.trainingId, syncProgressWithDatabase])
 
+  const updateUserName = useCallback(async (oldName: string, newName: string) => {
+    if (!newName || newName.trim() === oldName.trim()) return
+    const trimmedNewName = newName.trim()
+    const tId = progress.trainingId || 'calidad'
+
+    // 1. Delete old participant record from Supabase
+    try {
+      const { error } = await supabase
+        .from('participants')
+        .delete()
+        .eq('user_name', oldName)
+        .eq('training_id', tId)
+
+      if (error) {
+        console.error('Error deleting old participant in Supabase:', error)
+      }
+    } catch (e) {
+      console.error(e)
+    }
+
+    // 2. Update local storage keys
+    localStorage.setItem(GLOBAL_USERNAME_KEY, trimmedNewName)
+    
+    // Update global list in local storage
+    try {
+      const saved = localStorage.getItem('bpm-capacitaciones-all-participants')
+      if (saved) {
+        const list = JSON.parse(saved)
+        const updatedList = list.map((p: any) => {
+          if (p.userName === oldName && p.trainingId === tId) {
+            return { ...p, userName: trimmedNewName, lastUpdated: new Date().toISOString() }
+          }
+          return p
+        })
+        localStorage.setItem('bpm-capacitaciones-all-participants', JSON.stringify(updatedList))
+      }
+    } catch (e) {
+      console.error(e)
+    }
+
+    // 3. Update active progress state
+    setProgress(prev => {
+      const saved = localStorage.getItem(`bpm-mi-gusto-progress_${tId}`)
+      if (saved) {
+        const parsed = JSON.parse(saved)
+        const next = {
+          ...parsed,
+          userName: trimmedNewName,
+        }
+        localStorage.setItem(`bpm-mi-gusto-progress_${tId}`, JSON.stringify(next))
+        return next
+      }
+      return {
+        ...prev,
+        userName: trimmedNewName,
+      }
+    })
+  }, [progress.trainingId])
+
   const logout = useCallback(() => {
     localStorage.removeItem(GLOBAL_USERNAME_KEY)
     localStorage.removeItem(ACTIVE_TRAINING_KEY)
@@ -532,6 +592,7 @@ export function CourseProvider({ children }: { children: ReactNode }) {
         selectTraining,
         logout,
         syncProgressWithDatabase,
+        updateUserName,
       }}
     >
       {children}
