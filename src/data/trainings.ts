@@ -7,6 +7,7 @@ export interface Training {
   active: boolean
   tagline: string
   themeColor: 'white' | 'red' | 'green' | 'yellow' | 'black' | 'blue'
+  totalColaboradores?: number
 }
 
 export const TRAININGS: Training[] = [
@@ -19,6 +20,7 @@ export const TRAININGS: Training[] = [
     tagline: 'Obligatorio y Disponible',
     description: 'Buenas Prácticas de Manufactura y desinfección en planta.',
     themeColor: 'blue',
+    totalColaboradores: 141,
   },
   {
     id: 'armado',

@@ -599,7 +599,12 @@ export function AdminPanel() {
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           <div className="bg-surface-card border border-surface-border rounded-xl p-4 text-left">
             <span className="text-xs text-text-muted font-semibold uppercase tracking-wider">Total Evaluados</span>
-            <h3 className="text-2xl font-black text-white mt-1">{stats.total}</h3>
+            <h3 className="text-2xl font-black text-white mt-1">
+              {stats.total}
+              {TRAININGS.find(t => t.id === activeTab)?.totalColaboradores !== undefined && (
+                <span className="text-xs text-text-muted font-semibold">/{TRAININGS.find(t => t.id === activeTab)!.totalColaboradores}</span>
+              )}
+            </h3>
           </div>
           <div className="bg-brand-600/10 border border-brand-500/30 rounded-xl p-4 text-left">
             <span className="text-xs text-brand-300 font-semibold uppercase tracking-wider">Aprobados</span>
