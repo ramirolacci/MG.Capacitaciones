@@ -5,6 +5,7 @@ import { usePageNavigate } from '../hooks/usePageNavigate'
 import { supabase } from '../utils/supabase'
 import { getAssetUrl } from '../utils/assets'
 import { TRAININGS } from '../data/trainings'
+import { COLLABORATORS } from '../data/collaborators'
 
 const formatDuration = (startedAt?: string | null, completedAt?: string | null, lastUpdated?: string) => {
   if (!startedAt) return '-'
@@ -46,6 +47,9 @@ export function AdminPanel() {
   const [sortBy, setSortBy] = useState<'name' | 'score' | 'date'>('date')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
   const [activeTab, setActiveTab] = useState<string>('calidad')
+  const [viewMode, setViewMode] = useState<'participants' | 'collaborators'>('participants')
+  const [selectedCollaborator, setSelectedCollaborator] = useState<string | null>(null)
+  const [collaboratorSearch, setCollaboratorSearch] = useState('')
   const [isExportPreviewOpen, setIsExportPreviewOpen] = useState(false)
   const [visibleColumns, setVisibleColumns] = useState({
     trabajador: true,
@@ -584,6 +588,16 @@ export function AdminPanel() {
               )
             })()}
             <button
+              onClick={() => setViewMode(v => v === 'collaborators' ? 'participants' : 'collaborators')}
+              className={`text-xs font-bold border px-4 py-2.5 rounded-lg transition-colors flex items-center gap-1.5 ${
+                viewMode === 'collaborators'
+                  ? 'bg-violet-600/20 border-violet-500/40 text-violet-300'
+                  : 'bg-violet-600/10 hover:bg-violet-600/20 text-violet-300 border-violet-500/30'
+              }`}
+            >
+              👥 Colaboradores
+            </button>
+            <button
               onClick={() => setIsExportPreviewOpen(true)}
               disabled={activeParticipants.length === 0}
               className="text-xs font-bold bg-brand-600/10 hover:bg-brand-600/20 text-brand-300 border border-brand-500/30 px-4 py-2.5 rounded-lg transition-colors flex items-center gap-1.5"
@@ -627,6 +641,78 @@ export function AdminPanel() {
           })}
         </div>
 
+        {/* ── COLLABORATORS VIEW ── */}
+        {viewMode === 'collaborators' && (
+          <div className="animate-fade-in flex flex-col gap-4">
+            {/* Header of collaborators section */}
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+              <div className="flex-1">
+                <h2 className="text-base font-black text-white">👥 Directorio de Colaboradores</h2>
+                <p className="text-xs text-text-muted mt-0.5">{COLLABORATORS.length} colaboradores registrados — hacé clic en 📋 para ver sus capacitaciones</p>
+              </div>
+              <div className="relative w-full sm:w-72">
+                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted text-sm">🔍</span>
+                <input
+                  type="text"
+                  value={collaboratorSearch}
+                  onChange={e => setCollaboratorSearch(e.target.value)}
+                  placeholder="Buscar colaborador..."
+                  className="w-full bg-surface border border-surface-border/60 rounded-xl pl-9 pr-4 py-2.5 text-sm focus:outline-none focus:border-violet-500 text-white"
+                />
+              </div>
+            </div>
+
+            {/* Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+              {COLLABORATORS
+                .filter(name => name.toLowerCase().includes(collaboratorSearch.toLowerCase()))
+                .map((name, idx) => {
+                  const records = participants.filter(p =>
+                    p.userName.trim().toLowerCase() === name.trim().toLowerCase()
+                  )
+                  const hasAny = records.length > 0
+                  const allPassed = hasAny && records.every(r => r.evaluationFailed === false)
+                  const hasFailed = hasAny && records.some(r => r.evaluationFailed === true)
+
+                  return (
+                    <div
+                      key={idx}
+                      className="bg-surface-card border border-surface-border/60 rounded-xl px-4 py-3 flex items-center justify-between gap-3 hover:border-violet-500/30 transition-all"
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className={`w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-black ${
+                          allPassed
+                            ? 'bg-brand-500/20 text-brand-400'
+                            : hasFailed
+                            ? 'bg-red-500/20 text-red-400'
+                            : hasAny
+                            ? 'bg-amber-500/20 text-amber-400'
+                            : 'bg-surface-elevated text-text-muted'
+                        }`}>
+                          {name.charAt(0)}
+                        </div>
+                        <span className="text-xs font-semibold text-white truncate capitalize-none leading-tight">
+                          {name}
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => setSelectedCollaborator(name)}
+                        title="Ver capacitaciones"
+                        className="flex-shrink-0 p-2 bg-violet-600/10 hover:bg-violet-600/20 text-violet-300 border border-violet-500/30 rounded-lg transition-all"
+                      >
+                        📋
+                      </button>
+                    </div>
+                  )
+                })
+              }
+            </div>
+          </div>
+        )}
+
+        {/* ── PARTICIPANTS VIEW ── */}
+        {viewMode === 'participants' && (
+          <>
         {/* Dashboard statistics cards */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           <div className="bg-surface-card border border-surface-border rounded-xl p-4 text-left">
@@ -879,6 +965,8 @@ export function AdminPanel() {
             </div>
           )}
         </div>
+          </>
+        )}
       </div>
 
       {/* Export Preview Modal */}
@@ -998,6 +1086,85 @@ export function AdminPanel() {
                   🖨️ Imprimir
                 </button>
               </div>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* Collaborator Detail Modal */}
+      {selectedCollaborator && createPortal(
+        <div
+          className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={() => setSelectedCollaborator(null)}
+        >
+          <div
+            className="bg-surface-card border border-surface-border rounded-2xl w-full max-w-lg p-6 shadow-glow relative animate-scale-in flex flex-col gap-5 max-h-[85vh] overflow-y-auto"
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Modal header */}
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-[10px] text-violet-400 font-extrabold uppercase tracking-widest mb-1">Capacitaciones del colaborador</p>
+                <h3 className="text-lg font-black text-white leading-tight">{selectedCollaborator}</h3>
+              </div>
+              <button
+                onClick={() => setSelectedCollaborator(null)}
+                className="p-2 bg-surface hover:bg-surface-elevated border border-surface-border rounded-xl text-text-muted hover:text-white transition-colors flex-shrink-0"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Training list */}
+            <div className="flex flex-col gap-3">
+              {TRAININGS.map(training => {
+                const record = participants.find(p =>
+                  p.userName.trim().toLowerCase() === selectedCollaborator.trim().toLowerCase() &&
+                  p.trainingId === training.id
+                )
+                const isPassed = record?.evaluationFailed === false
+                const isFailed = record?.evaluationFailed === true
+                const inProgress = record && !isPassed && !isFailed
+
+                return (
+                  <div
+                    key={training.id}
+                    className="flex items-center justify-between gap-4 bg-surface border border-surface-border/50 rounded-xl px-4 py-3"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-xl">{training.icon}</span>
+                      <div>
+                        <p className="text-sm font-bold text-white">{training.title}</p>
+                        {record && (
+                          <p className="text-[10px] text-text-muted mt-0.5">
+                            {record.evaluationScore !== undefined
+                              ? `Nota: ${record.evaluationScore}/${training.id === 'armado' ? 22 : 15}`
+                              : 'Sin nota aún'}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    {!record ? (
+                      <span className="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-surface-elevated border border-surface-border text-text-muted">
+                        Sin registro
+                      </span>
+                    ) : isPassed ? (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2.5 py-1 rounded-full bg-brand-500/10 border border-brand-500/20 text-brand-400">
+                        🟢 Aprobado
+                      </span>
+                    ) : isFailed ? (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2.5 py-1 rounded-full bg-red-500/10 border border-red-500/20 text-red-400">
+                        🔴 No Aprobado
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400">
+                        🟡 En Curso
+                      </span>
+                    )}
+                  </div>
+                )
+              })}
             </div>
           </div>
         </div>,
