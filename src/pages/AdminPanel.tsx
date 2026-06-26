@@ -49,6 +49,7 @@ export function AdminPanel() {
   const [activeTab, setActiveTab] = useState<string>('calidad')
   const [viewMode, setViewMode] = useState<'participants' | 'collaborators'>('participants')
   const [selectedCollaborator, setSelectedCollaborator] = useState<string | null>(null)
+  const [isModalClosing, setIsModalClosing] = useState(false)
   const [collaboratorSearch, setCollaboratorSearch] = useState('')
   const [isExportPreviewOpen, setIsExportPreviewOpen] = useState(false)
   const [visibleColumns, setVisibleColumns] = useState({
@@ -460,6 +461,14 @@ export function AdminPanel() {
     }
   }
 
+  const closeCollaboratorModal = () => {
+    setIsModalClosing(true)
+    setTimeout(() => {
+      setSelectedCollaborator(null)
+      setIsModalClosing(false)
+    }, 200)
+  }
+
   if (authLoading) {
     return (
       <div className="min-h-dvh bg-gradient-dark text-text-primary flex flex-col justify-center items-center gap-4">
@@ -589,10 +598,10 @@ export function AdminPanel() {
             })()}
             <button
               onClick={() => setViewMode(v => v === 'collaborators' ? 'participants' : 'collaborators')}
-              className={`text-xs font-bold border px-4 py-2.5 rounded-lg transition-colors flex items-center gap-1.5 ${
+              className={`text-xs font-bold border px-4 py-2.5 rounded-lg transition-all duration-200 flex items-center gap-1.5 ${
                 viewMode === 'collaborators'
                   ? 'bg-violet-600/20 border-violet-500/40 text-violet-300'
-                  : 'bg-violet-600/10 hover:bg-violet-600/20 text-violet-300 border-violet-500/30'
+                  : 'bg-surface-card hover:bg-surface-elevated border-surface-border text-text-muted hover:text-white'
               }`}
             >
               👥 Colaboradores
@@ -613,6 +622,8 @@ export function AdminPanel() {
           </div>
         </header>
 
+        {/* Training tabs — hidden in collaborators view */}
+        {viewMode === 'participants' && (
         <div className="flex w-full border-b border-surface-border/50 gap-1.5 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden pb-px">
           {trainings.map((t) => {
             const count = participants.filter(p => p.trainingId === t.id).length
@@ -640,10 +651,11 @@ export function AdminPanel() {
             )
           })}
         </div>
+        )}
 
         {/* ── COLLABORATORS VIEW ── */}
         {viewMode === 'collaborators' && (
-          <div className="animate-fade-in flex flex-col gap-4">
+          <div className="animate-slide-up flex flex-col gap-4">
             {/* Header of collaborators section */}
             <div className="flex flex-col sm:flex-row sm:items-center gap-3">
               <div className="flex-1">
@@ -712,7 +724,7 @@ export function AdminPanel() {
 
         {/* ── PARTICIPANTS VIEW ── */}
         {viewMode === 'participants' && (
-          <>
+          <div className="animate-slide-up flex flex-col gap-6">
         {/* Dashboard statistics cards */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           <div className="bg-surface-card border border-surface-border rounded-xl p-4 text-left">
@@ -965,7 +977,7 @@ export function AdminPanel() {
             </div>
           )}
         </div>
-          </>
+          </div>
         )}
       </div>
 
@@ -1095,11 +1107,15 @@ export function AdminPanel() {
       {/* Collaborator Detail Modal */}
       {selectedCollaborator && createPortal(
         <div
-          className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
-          onClick={() => setSelectedCollaborator(null)}
+          className={`fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm ${
+            isModalClosing ? 'animate-backdrop-out' : 'animate-backdrop-in'
+          }`}
+          onClick={closeCollaboratorModal}
         >
           <div
-            className="bg-surface-card border border-surface-border rounded-2xl w-full max-w-lg p-6 shadow-glow relative animate-scale-in flex flex-col gap-5 max-h-[85vh] overflow-y-auto"
+            className={`bg-surface-card border border-surface-border rounded-2xl w-full max-w-lg p-6 shadow-glow flex flex-col gap-5 max-h-[85vh] overflow-y-auto ${
+              isModalClosing ? 'animate-scale-out' : 'animate-scale-in'
+            }`}
             onClick={e => e.stopPropagation()}
           >
             {/* Modal header */}
@@ -1109,7 +1125,7 @@ export function AdminPanel() {
                 <h3 className="text-lg font-black text-white leading-tight">{selectedCollaborator}</h3>
               </div>
               <button
-                onClick={() => setSelectedCollaborator(null)}
+                onClick={closeCollaboratorModal}
                 className="p-2 bg-surface hover:bg-surface-elevated border border-surface-border rounded-xl text-text-muted hover:text-white transition-colors flex-shrink-0"
               >
                 ✕

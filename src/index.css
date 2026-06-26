@@ -163,4 +163,66 @@
   .pb-safe {
     padding-bottom: env(safe-area-inset-bottom, 1rem);
   }
+
+  /* ── Panel / view transitions ── */
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease both;
+  }
+  .animate-fade-out {
+    animation: fadeOut 0.25s ease both;
+  }
+  .animate-slide-up {
+    animation: slideUp 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .animate-slide-down {
+    animation: slideDown 0.25s cubic-bezier(0.4, 0, 1, 1) both;
+  }
+
+  /* ── Modal animations ── */
+  .animate-scale-in {
+    animation: scaleIn 0.25s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .animate-scale-out {
+    animation: scaleOut 0.2s cubic-bezier(0.4, 0, 1, 1) both;
+  }
+  .animate-backdrop-in {
+    animation: backdropIn 0.25s ease both;
+  }
+  .animate-backdrop-out {
+    animation: backdropOut 0.2s ease both;
+  }
 }
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideDown {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(12px); }
+}
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.93); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes scaleOut {
+  from { opacity: 1; transform: scale(1); }
+  to   { opacity: 0; transform: scale(0.93); }
+}
+@keyframes backdropIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes backdropOut {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
