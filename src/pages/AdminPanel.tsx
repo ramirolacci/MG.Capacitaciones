@@ -5,11 +5,8 @@ import { usePageNavigate } from '../hooks/usePageNavigate'
 import { supabase } from '../utils/supabase'
 import { getAssetUrl } from '../utils/assets'
 import { TRAININGS } from '../data/trainings'
-<<<<<<< HEAD
 import { getSectorForUser } from '../data/sectors'
-=======
 import { COLLABORATORS } from '../data/collaborators'
->>>>>>> f0a4dba1494f292b3df4d4ddb5fbfdebb197f58b
 
 const formatDuration = (startedAt?: string | null, completedAt?: string | null, lastUpdated?: string) => {
   if (!startedAt) return '-'
@@ -759,9 +756,14 @@ export function AdminPanel() {
                         }`}>
                           {name.charAt(0)}
                         </div>
-                        <span className="text-xs font-semibold text-white truncate capitalize-none leading-tight">
-                          {name}
-                        </span>
+                        <div className="flex flex-col gap-1.5 min-w-0">
+                          <span className="text-xs font-bold text-white truncate capitalize-none leading-tight">
+                            {name}
+                          </span>
+                          <span className={`inline-flex self-start items-center text-[9px] font-bold px-2 py-0.5 rounded-full border ${getSectorBadgeStyles(getSectorForUser(name))}`}>
+                            {getSectorForUser(name)}
+                          </span>
+                        </div>
                       </div>
                       <button
                         onClick={() => setSelectedCollaborator(name)}
@@ -1204,7 +1206,12 @@ export function AdminPanel() {
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-[10px] text-violet-400 font-extrabold uppercase tracking-widest mb-1">Capacitaciones del colaborador</p>
-                <h3 className="text-lg font-black text-white leading-tight">{selectedCollaborator}</h3>
+                <div className="flex flex-wrap items-center gap-2 mt-1">
+                  <h3 className="text-lg font-black text-white leading-tight">{selectedCollaborator}</h3>
+                  <span className={`inline-flex items-center text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${getSectorBadgeStyles(getSectorForUser(selectedCollaborator))}`}>
+                    {getSectorForUser(selectedCollaborator)}
+                  </span>
+                </div>
               </div>
               <button
                 onClick={closeCollaboratorModal}
