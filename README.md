@@ -104,6 +104,72 @@ Cada lección utiliza tipos de slide especializados — hero, listas, comparativ
 | Animaciones | GSAP 3 |
 | Routing | React Router 6 |
 | Estado | React Context + LocalStorage |
+| Backend / BD | Supabase |
+
+---
+
+## Instalación y configuración
+
+Sigue estos pasos para clonar y ejecutar el proyecto en tu entorno local:
+
+### 1. Prerrequisitos
+
+- **Node.js** (versión 18 o superior recomendada)
+- Gestor de paquetes: **npm** o **pnpm**
+
+### 2. Clonar el repositorio
+
+```bash
+git clone https://github.com/<tu-usuario-o-organizacion>/MG.Capacitaciones.git
+cd MG.Capacitaciones
+```
+
+### 3. Instalar dependencias
+
+Con **npm**:
+```bash
+npm install
+```
+
+O si utilizas **pnpm**:
+```bash
+pnpm install
+```
+
+### 4. Variables de entorno
+
+Copia el archivo de variables de ejemplo y configúralo con tus credenciales de Supabase:
+
+```bash
+cp .env.example .env
+```
+
+Edita `.env` con los datos de tu proyecto de Supabase:
+
+```env
+VITE_SUPABASE_URL=https://tu-proyecto.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=tu_clave_publica_o_anon
+```
+
+> **Nota:** Si vas a configurar la base de datos en Supabase, ejecuta las consultas de `supabase_schema.sql` en el SQL Editor de tu panel de Supabase para inicializar las tablas de participantes, pines y sus políticas RLS.
+
+### 5. Iniciar en desarrollo
+
+```bash
+npm run dev
+# o con pnpm:
+pnpm dev
+```
+
+La aplicación quedará disponible en `http://localhost:5173` (o el puerto que asigne Vite).
+
+### Scripts disponibles
+
+| Comando | Descripción |
+|---------|-------------|
+| `npm run dev` / `pnpm dev` | Inicia el servidor de desarrollo local con Hot Module Replacement (HMR). |
+| `npm run build` / `pnpm build` | Compila TypeScript y genera el bundle optimizado para producción en `/dist`. |
+| `npm run preview` / `pnpm preview` | Previsualiza localmente el build de producción generado. |
 
 ---
 
